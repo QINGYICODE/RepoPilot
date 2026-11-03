@@ -51,7 +51,7 @@ class ModelProtocolIT {
                         toolResultReceived = message.path("content").asString().contains("repositoryCount");
                     }
                 }
-                String content = json.writeValueAsString("{\"phase\":\"D1\",\"repositoryCount\":" + repositoryCount + ",\"indexed\":false}");
+                String content = json.writeValueAsString("{\"phase\":\"D2\",\"repositoryCount\":" + repositoryCount + ",\"indexed\":false}");
                 choice = "{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":" + content + "},\"finish_reason\":\"stop\"}";
             }
             byte[] body = ("{\"id\":\"chatcmpl-local\",\"object\":\"chat.completion\",\"created\":1700000000,\"model\":\"local-protocol-stub\",\"choices\":[" + choice + "],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":10,\"total_tokens\":20}}").getBytes(StandardCharsets.UTF_8);

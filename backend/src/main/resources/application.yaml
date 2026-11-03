@@ -11,6 +11,7 @@ spring:
     hikari:
       maximum-pool-size: 5
       connection-timeout: 5000
+      connection-init-sql: "SET time_zone = '+00:00'"
   flyway:
     enabled: true
   ai:
@@ -39,3 +40,13 @@ mybatis-plus:
     map-underscore-to-camel-case: true
   global-config:
     banner: false
+repopilot:
+  storage-directory: ${REPOSITORY_STORAGE_DIR:.local/repositories}
+  allowed-repositories: ${REPOSITORY_ALLOWLIST:spring-petclinic/spring-petclinic-microservices}
+  github-token: ${GITHUB_TOKEN:}
+  network-proxy: ${REPOSITORY_PROXY:}
+  max-files: 5000
+  max-file-bytes: 262144
+  max-history-commits: 2000
+  max-evidence: 40000
+  job-lease-seconds: 180

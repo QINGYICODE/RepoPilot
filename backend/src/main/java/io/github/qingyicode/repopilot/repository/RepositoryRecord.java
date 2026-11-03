@@ -11,6 +11,8 @@ public class RepositoryRecord {
     private String owner;
     private String name;
     private String defaultRef;
+    private Long githubId;
+    private Long activeSnapshotId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -20,4 +22,8 @@ public class RepositoryRecord {
     public void setName(String name) { this.name = name; }
     public String getDefaultRef() { return defaultRef; }
     public void setDefaultRef(String defaultRef) { this.defaultRef = defaultRef; }
+    public Long getGithubId() { return githubId; }
+    public void setGithubId(Long githubId) { this.githubId = githubId; }
+    public Long getActiveSnapshotId() { return activeSnapshotId; }
+    public void setActiveSnapshotId(Long activeSnapshotId) { this.activeSnapshotId = activeSnapshotId; }
 }

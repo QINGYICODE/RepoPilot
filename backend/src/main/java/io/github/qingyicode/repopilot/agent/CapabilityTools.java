@@ -15,7 +15,7 @@ public final class CapabilityTools {
         this.capabilityService = capabilityService;
     }
 
-    @Tool(description = "Read RepoPilot's actual phase, dependency versions and registered repository count. Read-only; no repository code has been indexed in D1.")
+    @Tool(description = "Read RepoPilot's actual phase, dependency versions, registered repository count and available capabilities. Read-only.")
     public CapabilitySnapshot getProjectCapabilities() {
         invocations.incrementAndGet();
         lastSnapshot = capabilityService.snapshot();

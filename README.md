@@ -4,7 +4,7 @@
 
 RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变更影响与历史修复检索。项目以明确的代码仓库和版本为分析边界，通过工具收集代码、配置和提交记录，为分析结论提供可复核的依据。
 
-仓库包含 Vue 工作台、Spring Boot 后端、MySQL 持久化及 Spring AI 只读工具调用验证，业务设计和实现细节见[项目文档](docs/项目文档.md)。
+项目提供仓库白名单登记、GitHub 身份校验、固定 SHA 同步、异步任务和快照元数据查询。后端使用 Spring Boot、MySQL 和 Spring AI，接口说明见 [API 文档](docs/API.md)。
 
 ## 应用场景
 
@@ -33,7 +33,7 @@ RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变�
 | 数据持久化 | MySQL、MyBatis-Plus、Flyway |
 | 测试与观测 | JUnit、Actuator、Micrometer |
 
-仓库分析方案通过 GitHub API、JGit 和静态依赖解析器组织证据，由应用负责工具权限、上下文管理和结果核验。
+仓库层使用 GitHub API 和 JGit 绑定允许的仓库与明确版本，不执行目标仓库脚本。
 
 ## 快速开始
 

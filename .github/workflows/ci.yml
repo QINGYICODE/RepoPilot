@@ -1,4 +1,4 @@
-name: D1 baseline
+name: Build and unit checks
 on:
   push:
   pull_request:
