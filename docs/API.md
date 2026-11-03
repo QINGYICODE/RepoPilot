@@ -129,6 +129,26 @@ Java 按类型/方法和补充窗口切分；POM 按依赖、属性、管理声�
 
 提供部署 SHA 时，JGit 只读本地镜像，先验证它属于知识版本的祖先，再检查候选是否已在部署祖先中。结果不代表完成 cherry-pick 等价补丁、后续 revert 或运行时适用性验证；查询截断和索引覆盖限制随响应返回。此接口不会触发网络拉取。
 
+## Agent 分析任务
+
+配置模型并执行 `python3 scripts/dev.py agent` 启用真实模型。普通 `backend` 模式仍可访问仓库工具，分析任务会明确返回 `UNAVAILABLE / MODEL_NOT_CONFIGURED`。
+
+`POST /analysis-runs` 返回 HTTP 202，随后通过 `GET /analysis-runs/{id}` 获取执行记录与终态。依赖分析示例：
+
+```json
+{"repoId": 9, "snapshotId": 29, "baseSnapshotId": 28, "task": "DEPENDENCY_IMPACT", "module": "spring-petclinic-api-gateway", "question": "依赖变更会影响哪些服务？"}
+```
+
+告警分析使用 `task: INCIDENT_FIX`，无需 baseSnapshotId，question 放告警/日志内容，可提供 module 和 deployedSha。所有 ID 都需替换为已授权仓库的实际值。
+
+状态为 `RUNNING / ANSWERED / PARTIAL / REFUSED / NEEDS_INPUT / UNAVAILABLE`。仓库白名单和快照所属关系在接收任务时核验；不提供登录或多用户 RBAC。未知仓库、越权资源使用既有 HTTP 403/404/409 错误约定。任务内的越界问题、模型越权工具请求和伪造引用使用明确拒答终态。
+
+结果含 `summary / dependency / incident / citations / events / usage / reasonCode / warnings`。工具事件只记录名称、状态、错误码、缓存与耗时，不记录密钥或模型私有推理。只有经过业务工具与证据核验的结构化事实才能展示为结论；模型自由生成的答案正文不会直接展示。
+
+每次最多 8 次模型请求、12 次工具请求、单工具 4 次请求和 90 秒任务期限；单次模型等待最多 30 秒。重复成功调用复用缓存，连续两次无进展停止；工具错误与无命中分别记录。任务队列有界，满载返回 429。进程重启会将遗留 RUNNING 任务标为 PROCESS_RESTARTED，不隐式重新消费模型额度。
+
+`usage` 区分模型次数、请求工具次数、实际执行、执行失败、参数/权限拦截和缓存命中。执行失败率应使用 `failedToolCalls / executedToolCalls`，同时单独报告拦截与缓存，避免更改分母制造改善。没有可靠供应商 token 用量时使用保守估算并标记 estimatedTokens。18%→4% 尚不是实测成果。
+
 ## 配置与验证
 
 | 环境变量 | 作用 |

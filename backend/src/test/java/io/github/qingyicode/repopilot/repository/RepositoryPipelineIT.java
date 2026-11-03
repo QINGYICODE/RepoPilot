@@ -43,6 +43,7 @@ class RepositoryPipelineIT {
     @Autowired IndexStore indices;
     @Autowired DependencyService dependencies;
     @Autowired io.github.qingyicode.repopilot.incident.IncidentService incidents;
+    @Autowired io.github.qingyicode.repopilot.agent.AnalysisService analyses;
     @Autowired JdbcTemplate jdbc;
     @org.springframework.boot.test.web.server.LocalServerPort int port;
     long repoId;
@@ -55,6 +56,29 @@ class RepositoryPipelineIT {
         properties.add("repopilot.storage-directory",()->ROOT.resolve("mirrors").toString());
     }
     @TestConfiguration static class Configuration {
+        @Bean org.springframework.ai.chat.model.ChatModel fixtureAgent() {
+            var model=org.mockito.Mockito.mock(org.springframework.ai.chat.model.ChatModel.class);
+            org.mockito.Mockito.when(model.getDefaultOptions()).thenReturn(org.springframework.ai.openai.OpenAiChatOptions.builder().model("fixture").build());
+            org.mockito.Mockito.when(model.call(org.mockito.ArgumentMatchers.any(org.springframework.ai.chat.prompt.Prompt.class))).thenAnswer(call->{
+                org.springframework.ai.chat.prompt.Prompt prompt=call.getArgument(0);
+                var toolMessages=prompt.getInstructions().stream().filter(m->m instanceof org.springframework.ai.chat.messages.ToolResponseMessage)
+                        .map(m->(org.springframework.ai.chat.messages.ToolResponseMessage)m).toList();
+                org.springframework.ai.chat.messages.AssistantMessage message;
+                if(toolMessages.isEmpty()) {
+                    String tool=prompt.getInstructions().stream().anyMatch(m->m.getText()!=null && m.getText().contains("\"task\":\"INCIDENT_FIX\""))?"searchFixCandidates":"compareDependencyChanges";
+                    message=org.springframework.ai.chat.messages.AssistantMessage.builder().content("").toolCalls(List.of(
+                            new org.springframework.ai.chat.messages.AssistantMessage.ToolCall(java.util.UUID.randomUUID().toString(),"function",tool,"{}"))).build();
+                } else {
+                    var response=toolMessages.getLast().getResponses().getLast();
+                    var tree=tools.jackson.databind.json.JsonMapper.builder().build().readTree(response.responseData());
+                    String output=tree.path("evidenceIds").isEmpty()?"{\"action\":\"REFUSE\",\"reasonCode\":\"NO_EVIDENCE\"}":
+                            "{\"action\":\"ANSWER\",\"evidenceIds\":"+tree.path("evidenceIds")+"}";
+                    message=new org.springframework.ai.chat.messages.AssistantMessage(output);
+                }
+                return new org.springframework.ai.chat.model.ChatResponse(List.of(new org.springframework.ai.chat.model.Generation(message)));
+            });
+            return model;
+        }
         @Bean @Primary GitHubGateway fixtures() { return (owner,name)->new RepositoryData.Metadata(name.equals("repo")?700:701,owner+"/"+name,"main",false); }
         @Bean @Primary GitMirror fixtureMirror(RepositorySettings settings) {
             return new GitMirror(settings) {
@@ -137,6 +161,22 @@ class RepositoryPipelineIT {
                 .isEqualTo("COMMIT_PRESENT_IN_DEPLOYED_ANCESTRY");
         assertThat(incidents.search(repoId,headId,"lib","NO_SUCH_SIGNATURE_987",base).reasonCode()).isEqualTo("NO_EVIDENCE");
         assertThatThrownBy(()->incidents.search(repoId,headId,"other","ALERT_PIPELINE",base)).hasMessage("UNKNOWN_SERVICE_MODULE");
+    }
+    @Test void asynchronousAgentRunPersistsTraceAndRejectsUnrelatedQuestions() throws Exception {
+        var submitted=analyses.submit(new io.github.qingyicode.repopilot.agent.AnalysisData.Request(repoId,headId,
+                io.github.qingyicode.repopilot.agent.AnalysisData.Task.DEPENDENCY_IMPACT,"依赖升级影响哪些服务？",baseId,null,null));
+        var result=submitted;
+        long deadline=System.nanoTime()+java.time.Duration.ofSeconds(15).toNanos();
+        while(result.status().equals("RUNNING") && System.nanoTime()<deadline) {Thread.sleep(20);result=analyses.get(submitted.id());}
+        assertThat(result.status()).isEqualTo("PARTIAL");
+        assertThat(result.reasonCode()).isEqualTo("EVIDENCE_VERIFIED");
+        assertThat(result.dependency().affectedServices()).containsExactly("api");
+        assertThat(result.events()).hasSize(1);
+        assertThat(analyses.get(result.id()).citations()).isNotEmpty();
+        var refused=analyses.submit(new io.github.qingyicode.repopilot.agent.AnalysisData.Request(repoId,headId,
+                io.github.qingyicode.repopilot.agent.AnalysisData.Task.INCIDENT_FIX,"今天天气怎么样？",null,null,null));
+        assertThat(refused.status()).isEqualTo("REFUSED");assertThat(refused.usage().modelCalls()).isZero();
+        assertThat(analyses.get(refused.id()).reasonCode()).isEqualTo("OUT_OF_SCOPE");
     }
     @Test void failuresAndRetriesNeverReplaceTheActiveSnapshot() throws Exception {
         Long active=repos.repository(repoId).getActiveSnapshotId();

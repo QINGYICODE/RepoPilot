@@ -11,6 +11,6 @@ spring:
         options:
           model: ${LLM_MODEL}
           temperature: 0
-          max-tokens: 512
+          max-tokens: 1600
     retry:
       max-attempts: 1

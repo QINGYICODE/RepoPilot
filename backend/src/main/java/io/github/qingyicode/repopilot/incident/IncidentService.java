@@ -29,7 +29,7 @@ public class IncidentService {
         var snapshot=repositories.snapshot(repoId,snapshotId);
         if (message==null || message.isBlank() || message.length()>8000) throw DomainException.invalid("INVALID_INCIDENT_MESSAGE");
         if (service!=null && !service.isBlank()) {
-            RepositoryPolicy.path(service);
+            if(!service.equals(".")) RepositoryPolicy.path(service);
             if (indices.graph(repoId,snapshotId).modules().stream().noneMatch(m->m.path().equals(service)))
                 throw DomainException.invalid("UNKNOWN_SERVICE_MODULE");
         }
