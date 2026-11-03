@@ -1,0 +1,779 @@
+{
+  "verifiedOn": "2026-11-03",
+  "repository": "spring-petclinic/spring-petclinic-microservices",
+  "knowledgeSha": "3858f9c630cf989bb6809a86edf47c2be78dc9f1",
+  "model": "qwen3.8-flash",
+  "promptVersion": "repo-agent-v1",
+  "evaluationScope": "SMOKE_TEST_NOT_FAILURE_RATE_BENCHMARK",
+  "businessRuns": [
+    {
+      "id": "695a6bd2-f48c-4f32-bee4-543f212299ed",
+      "status": "PARTIAL",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v1",
+      "knowledgeSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+      "baseSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+      "summary": "在指定版本与模块范围内识别到 2 项声明依赖变更。声明影响服务：spring-petclinic-admin-server。结果用于静态评审和回归范围，不代表运行时一定故障。",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 2458,
+        "outputTokens": 269,
+        "estimatedTokens": false,
+        "maxPromptBytes": 5793,
+        "compactedExchanges": 0,
+        "durationMs": 9352
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "compareDependencyChanges",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 86
+        }
+      ],
+      "citations": [
+        {
+          "id": "dcfc94f281348c1be3c853eb0106667fc2dd88ff96d87fca586ce7eef8db0d40",
+          "snapshotId": 30,
+          "type": "FILE",
+          "sourceSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 49,
+          "endLine": 53,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/17cad88d533554f53c634cfa78211ea2f51b0a46/spring-petclinic-admin-server/pom.xml#L49-L53"
+        },
+        {
+          "id": "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae",
+          "snapshotId": 30,
+          "type": "FILE",
+          "sourceSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 19,
+          "endLine": 19,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/17cad88d533554f53c634cfa78211ea2f51b0a46/spring-petclinic-admin-server/pom.xml#L19-L19"
+        },
+        {
+          "id": "4718d2963e5d085780ef9570d1d43c1d72b5407a65d32663788f4a29644a4479",
+          "snapshotId": 31,
+          "type": "FILE",
+          "sourceSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 49,
+          "endLine": 53,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/597ad1fbfabadfef4ed8a1d475f7f34aa2666aab/spring-petclinic-admin-server/pom.xml#L49-L53"
+        },
+        {
+          "id": "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053",
+          "snapshotId": 31,
+          "type": "FILE",
+          "sourceSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 19,
+          "endLine": 19,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/597ad1fbfabadfef4ed8a1d475f7f34aa2666aab/spring-petclinic-admin-server/pom.xml#L19-L19"
+        },
+        {
+          "id": "d9fa7324f59f87aed71c98b575a8f636ec8788b7ae6c3965dbbcaebebdaf1e32",
+          "snapshotId": 30,
+          "type": "FILE",
+          "sourceSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 44,
+          "endLine": 48,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/17cad88d533554f53c634cfa78211ea2f51b0a46/spring-petclinic-admin-server/pom.xml#L44-L48"
+        },
+        {
+          "id": "a28c5e1a7e1171c3bbd631772313c39c89ba6e06102201ccc9b7dfbcb819e48a",
+          "snapshotId": 31,
+          "type": "FILE",
+          "sourceSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 44,
+          "endLine": 48,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/597ad1fbfabadfef4ed8a1d475f7f34aa2666aab/spring-petclinic-admin-server/pom.xml#L44-L48"
+        }
+      ],
+      "affectedServices": [
+        "spring-petclinic-admin-server"
+      ],
+      "changes": [
+        {
+          "id": "db5d93c2bb26944f5e31",
+          "module": "spring-petclinic-admin-server",
+          "coordinate": "de.codecentric:spring-boot-admin-server-ui",
+          "kind": "MODIFIED",
+          "before": {
+            "key": "de.codecentric:spring-boot-admin-server-ui:jar:",
+            "coordinate": "de.codecentric:spring-boot-admin-server-ui",
+            "version": "3.4.1",
+            "expression": "${spring-boot-admin.version}",
+            "scope": "compile",
+            "optional": false,
+            "exclusions": [],
+            "resolution": "RESOLVED",
+            "internalModule": null,
+            "sources": [
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 49,
+                "endLine": 53,
+                "evidenceId": "dcfc94f281348c1be3c853eb0106667fc2dd88ff96d87fca586ce7eef8db0d40"
+              },
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 19,
+                "endLine": 19,
+                "evidenceId": "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae"
+              }
+            ]
+          },
+          "after": {
+            "key": "de.codecentric:spring-boot-admin-server-ui:jar:",
+            "coordinate": "de.codecentric:spring-boot-admin-server-ui",
+            "version": "4.0.2",
+            "expression": "${spring-boot-admin.version}",
+            "scope": "compile",
+            "optional": false,
+            "exclusions": [],
+            "resolution": "RESOLVED",
+            "internalModule": null,
+            "sources": [
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 49,
+                "endLine": 53,
+                "evidenceId": "4718d2963e5d085780ef9570d1d43c1d72b5407a65d32663788f4a29644a4479"
+              },
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 19,
+                "endLine": 19,
+                "evidenceId": "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053"
+              }
+            ]
+          }
+        },
+        {
+          "id": "4b2d7cc0fdef2b53937c",
+          "module": "spring-petclinic-admin-server",
+          "coordinate": "de.codecentric:spring-boot-admin-starter-server",
+          "kind": "MODIFIED",
+          "before": {
+            "key": "de.codecentric:spring-boot-admin-starter-server:jar:",
+            "coordinate": "de.codecentric:spring-boot-admin-starter-server",
+            "version": "3.4.1",
+            "expression": "${spring-boot-admin.version}",
+            "scope": "compile",
+            "optional": false,
+            "exclusions": [],
+            "resolution": "RESOLVED",
+            "internalModule": null,
+            "sources": [
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 44,
+                "endLine": 48,
+                "evidenceId": "d9fa7324f59f87aed71c98b575a8f636ec8788b7ae6c3965dbbcaebebdaf1e32"
+              },
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 19,
+                "endLine": 19,
+                "evidenceId": "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae"
+              }
+            ]
+          },
+          "after": {
+            "key": "de.codecentric:spring-boot-admin-starter-server:jar:",
+            "coordinate": "de.codecentric:spring-boot-admin-starter-server",
+            "version": "4.0.2",
+            "expression": "${spring-boot-admin.version}",
+            "scope": "compile",
+            "optional": false,
+            "exclusions": [],
+            "resolution": "RESOLVED",
+            "internalModule": null,
+            "sources": [
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 44,
+                "endLine": 48,
+                "evidenceId": "a28c5e1a7e1171c3bbd631772313c39c89ba6e06102201ccc9b7dfbcb819e48a"
+              },
+              {
+                "path": "spring-petclinic-admin-server/pom.xml",
+                "startLine": 19,
+                "endLine": 19,
+                "evidenceId": "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053"
+              }
+            ]
+          }
+        }
+      ],
+      "impacts": [
+        {
+          "changeId": "db5d93c2bb26944f5e31",
+          "service": "spring-petclinic-admin-server",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-server-ui@3.4.1"
+          ],
+          "evidenceIds": [
+            "dcfc94f281348c1be3c853eb0106667fc2dd88ff96d87fca586ce7eef8db0d40",
+            "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae"
+          ]
+        },
+        {
+          "changeId": "db5d93c2bb26944f5e31",
+          "service": "spring-petclinic-admin-server",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-server-ui@4.0.2"
+          ],
+          "evidenceIds": [
+            "4718d2963e5d085780ef9570d1d43c1d72b5407a65d32663788f4a29644a4479",
+            "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053"
+          ]
+        },
+        {
+          "changeId": "4b2d7cc0fdef2b53937c",
+          "service": "spring-petclinic-admin-server",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-starter-server@3.4.1"
+          ],
+          "evidenceIds": [
+            "d9fa7324f59f87aed71c98b575a8f636ec8788b7ae6c3965dbbcaebebdaf1e32",
+            "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae"
+          ]
+        },
+        {
+          "changeId": "4b2d7cc0fdef2b53937c",
+          "service": "spring-petclinic-admin-server",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-starter-server@4.0.2"
+          ],
+          "evidenceIds": [
+            "a28c5e1a7e1171c3bbd631772313c39c89ba6e06102201ccc9b7dfbcb819e48a",
+            "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4ff2b66d-d86a-41c6-b522-e7837a475295",
+      "status": "PARTIAL",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v1",
+      "knowledgeSha": "3858f9c630cf989bb6809a86edf47c2be78dc9f1",
+      "baseSha": null,
+      "summary": "找到 3 个有实际 diff 支持的相似修复候选；缺少经核验的事故关联，无法确认其就是本次告警的修复提交。",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 3134,
+        "outputTokens": 457,
+        "estimatedTokens": false,
+        "maxPromptBytes": 6325,
+        "compactedExchanges": 0,
+        "durationMs": 10518
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "searchFixCandidates",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 1332
+        }
+      ],
+      "citations": [
+        {
+          "id": "d243c7ffc1ed81e8de97de268f026a364fa5c4078605bc0cb80993b1b72277a6",
+          "snapshotId": 29,
+          "type": "COMMIT",
+          "sourceSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "path": "",
+          "startLine": 0,
+          "endLine": 0,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/9a76b4e34cd75f3d6bfa6f15775bf996c59e8989"
+        },
+        {
+          "id": "08c0fe5f79555690da81e382c72ce247ff192d8798aa0d862199b66cbcc55de7",
+          "snapshotId": 29,
+          "type": "DIFF",
+          "sourceSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 94,
+          "endLine": 101,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/9a76b4e34cd75f3d6bfa6f15775bf996c59e8989"
+        },
+        {
+          "id": "b35f744f40c61bab67a24e4ac6bbfbcfcc110e30ba2f27416ed8594f74108729",
+          "snapshotId": 29,
+          "type": "DIFF",
+          "sourceSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 55,
+          "endLine": 65,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/9a76b4e34cd75f3d6bfa6f15775bf996c59e8989"
+        },
+        {
+          "id": "d42bbd07dfa5c7d5b5b5c638551cad7bae6be68df39ee297439de8f0c9423aae",
+          "snapshotId": 29,
+          "type": "COMMIT",
+          "sourceSha": "07553f41f5f32f945e7f3bf3c991e955fd5ee6bf",
+          "path": "",
+          "startLine": 0,
+          "endLine": 0,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/07553f41f5f32f945e7f3bf3c991e955fd5ee6bf"
+        },
+        {
+          "id": "0047525239c0a723abe0fe1f7ddcb0a8be23ade69141352140293a9c64464e81",
+          "snapshotId": 29,
+          "type": "DIFF",
+          "sourceSha": "07553f41f5f32f945e7f3bf3c991e955fd5ee6bf",
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 86,
+          "endLine": 103,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/07553f41f5f32f945e7f3bf3c991e955fd5ee6bf"
+        },
+        {
+          "id": "3b3b49dfaa28c259ff889e723650d23e0bad1f47d3c98af5bb64f7fccfb0b0e5",
+          "snapshotId": 29,
+          "type": "COMMIT",
+          "sourceSha": "184a7b8c6a96fb82a8defee960031b1b410b57ba",
+          "path": "",
+          "startLine": 0,
+          "endLine": 0,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/184a7b8c6a96fb82a8defee960031b1b410b57ba"
+        },
+        {
+          "id": "b1a994c0c5298f924c88b2ceaf993eb6cc927b7f87e84464b44265bed79fa058",
+          "snapshotId": 29,
+          "type": "DIFF",
+          "sourceSha": "184a7b8c6a96fb82a8defee960031b1b410b57ba",
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 56,
+          "endLine": 65,
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/184a7b8c6a96fb82a8defee960031b1b410b57ba"
+        }
+      ],
+      "candidateShas": [
+        "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+        "07553f41f5f32f945e7f3bf3c991e955fd5ee6bf",
+        "184a7b8c6a96fb82a8defee960031b1b410b57ba"
+      ]
+    },
+    {
+      "id": "f4cc138c-f7ba-4273-8736-a3d628955d98",
+      "status": "REFUSED",
+      "reasonCode": "OUT_OF_SCOPE",
+      "model": "not-called",
+      "promptVersion": "repo-agent-v1",
+      "knowledgeSha": "3858f9c630cf989bb6809a86edf47c2be78dc9f1",
+      "baseSha": null,
+      "summary": "拒绝回答：仅支持当前代码仓库的依赖变更影响与告警历史修复分析。",
+      "usage": {
+        "modelCalls": 0,
+        "requestedToolCalls": 0,
+        "executedToolCalls": 0,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "estimatedTokens": false,
+        "maxPromptBytes": 0,
+        "compactedExchanges": 0,
+        "durationMs": 0
+      },
+      "events": [],
+      "citations": []
+    }
+  ],
+  "historicalCandidates": [
+    {
+      "inputKind": "SIMULATED_SIGNATURE_FROM_REAL_PATCH",
+      "signature": "spring-boot-starter-zipkin",
+      "reviewBasis": "POM replaces tracing libraries with Boot 4 Zipkin starter",
+      "commitSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+      "classification": "RELATED_CANDIDATE",
+      "applicability": "DEPLOYED_VERSION_UNKNOWN",
+      "evidence": [
+        {
+          "id": "d243c7ffc1ed81e8de97de268f026a364fa5c4078605bc0cb80993b1b72277a6",
+          "repoId": 9,
+          "type": "COMMIT",
+          "sourceSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "parentSha": null,
+          "path": "",
+          "symbol": "commit",
+          "modulePath": "",
+          "startLine": 0,
+          "endLine": 0,
+          "locator": {
+            "parents": [
+              "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab"
+            ]
+          },
+          "contentHash": "f45287434a4b7eaaba5b1142778877691a91740bff21842fed5f9d9931950cff",
+          "excerpt": "fix: zipkin tracing\n\nmigrate to \"spring-boot-starter-zipkin\" for Spring Boot 4 compatibility\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "truncated": false
+        },
+        {
+          "id": "4d4ea1c0f04bacd4ae07556ed61de97b32a99c66ca73cec357d9b633133556ef",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "parentSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "path": "spring-petclinic-vets-service/pom.xml",
+          "symbol": "diff",
+          "modulePath": "spring-petclinic-vets-service",
+          "startLine": 52,
+          "endLine": 61,
+          "locator": {
+            "newPath": "spring-petclinic-vets-service/pom.xml",
+            "oldPath": "spring-petclinic-vets-service/pom.xml",
+            "changeType": "MODIFY",
+            "newLineCount": 10,
+            "newStartLine": 52,
+            "oldLineCount": 6,
+            "oldStartLine": 52
+          },
+          "contentHash": "830a5996d9d715f0e8c7ab438300c4a280fc2ce938e0c005e9060b1c7cb47443",
+          "excerpt": "@@ -52,6 +52,10 @@\n             <artifactId>spring-boot-starter-test</artifactId>\n             <scope>test</scope>\n         </dependency>\n+        <dependency>\n+            <groupId>org.springframework.boot</groupId>\n+            <artifactId>spring-boot-starter-zipkin</artifactId>\n+        </dependency>\n \n         <!-- Spring Cloud-->\n         <dependency>\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "truncated": false
+        },
+        {
+          "id": "51ab0752b5352e6e43d122df2b0fba6cf24d3881197b8f778c841d4e7698f8d4",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "parentSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "path": "spring-petclinic-visits-service/pom.xml",
+          "symbol": "diff",
+          "modulePath": "spring-petclinic-visits-service",
+          "startLine": 43,
+          "endLine": 52,
+          "locator": {
+            "newPath": "spring-petclinic-visits-service/pom.xml",
+            "oldPath": "spring-petclinic-visits-service/pom.xml",
+            "changeType": "MODIFY",
+            "newLineCount": 10,
+            "newStartLine": 43,
+            "oldLineCount": 6,
+            "oldStartLine": 43
+          },
+          "contentHash": "cf8886f322b706a9c3a11decb5c9d85449fb29fd0fc159221eb2952e2cd4b3c7",
+          "excerpt": "@@ -43,6 +43,10 @@\n             <artifactId>spring-boot-starter-test</artifactId>\n             <scope>test</scope>\n         </dependency>\n+        <dependency>\n+            <groupId>org.springframework.boot</groupId>\n+            <artifactId>spring-boot-starter-zipkin</artifactId>\n+        </dependency>\n \n         <!-- Spring Cloud -->\n         <dependency>\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "truncated": false
+        },
+        {
+          "id": "93c7b98a3fdf8d85728e855cf4e158c583d19bf72df3806c303fa82eb5d2e06a",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "parentSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "path": "spring-petclinic-genai-service/pom.xml",
+          "symbol": "diff",
+          "modulePath": "spring-petclinic-genai-service",
+          "startLine": 57,
+          "endLine": 66,
+          "locator": {
+            "newPath": "spring-petclinic-genai-service/pom.xml",
+            "oldPath": "spring-petclinic-genai-service/pom.xml",
+            "changeType": "MODIFY",
+            "newLineCount": 10,
+            "newStartLine": 57,
+            "oldLineCount": 6,
+            "oldStartLine": 57
+          },
+          "contentHash": "52ed9d978cfe4a6c2149d27466412c2a116ed1a0aa5cb2858c1b5d68afd1e231",
+          "excerpt": "@@ -57,6 +57,10 @@\n             <artifactId>spring-boot-starter-test</artifactId>\n             <scope>test</scope>\n         </dependency>\n+        <dependency>\n+            <groupId>org.springframework.boot</groupId>\n+            <artifactId>spring-boot-starter-zipkin</artifactId>\n+        </dependency>\n \n         <!-- Spring Cloud -->\n         <dependency>\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/9a76b4e34cd75f3d6bfa6f15775bf996c59e8989",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "inputKind": "SIMULATED_SIGNATURE_FROM_REAL_PATCH",
+      "signature": "visitsMultiGet",
+      "reviewBasis": "VisitResource endpoint access modifier changes to public",
+      "commitSha": "b8bc7f2c377acac115bd8efeb19a9a9fd738faa4",
+      "classification": "RELATED_CANDIDATE",
+      "applicability": "DEPLOYED_VERSION_UNKNOWN",
+      "evidence": [
+        {
+          "id": "37dc62bffefc40795d640b06e2672b01fa8aaab83a6f11e2cdbd65bfa7d91f2c",
+          "repoId": 9,
+          "type": "COMMIT",
+          "sourceSha": "b8bc7f2c377acac115bd8efeb19a9a9fd738faa4",
+          "parentSha": null,
+          "path": "",
+          "symbol": "commit",
+          "modulePath": "",
+          "startLine": 0,
+          "endLine": 0,
+          "locator": {
+            "parents": [
+              "4e595d3395fc791974c959e4178ef383a506d672"
+            ]
+          },
+          "contentHash": "7c6db0fd552742a1eaa99080bf905de3540fba53d20d4a93c8063ea6952a87f7",
+          "excerpt": "fix access modifier bug on VisitResource class. (#165)\n\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/b8bc7f2c377acac115bd8efeb19a9a9fd738faa4",
+          "truncated": false
+        },
+        {
+          "id": "108e7cfbbe78f60bb3f14a0cd7e0c7cb70e19800d02f10fefc64e6318928dd00",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "b8bc7f2c377acac115bd8efeb19a9a9fd738faa4",
+          "parentSha": "4e595d3395fc791974c959e4178ef383a506d672",
+          "path": "spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java",
+          "symbol": "diff",
+          "modulePath": "spring-petclinic-visits-service",
+          "startLine": 60,
+          "endLine": 77,
+          "locator": {
+            "newPath": "spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java",
+            "oldPath": "spring-petclinic-visits-service/src/main/java/org/springframework/samples/petclinic/visits/web/VisitResource.java",
+            "changeType": "MODIFY",
+            "newLineCount": 18,
+            "newStartLine": 60,
+            "oldLineCount": 18,
+            "oldStartLine": 60
+          },
+          "contentHash": "842134dbd665820e0f17d0decfee0df22106960ae1260af787e9e5cac77e02b5",
+          "excerpt": "@@ -60,18 +60,18 @@\n     }\n \n     @GetMapping(\"owners/*/pets/{petId}/visits\")\n-    List<Visit> visits(@PathVariable(\"petId\") int petId) {\n+   public List<Visit> visits(@PathVariable(\"petId\") int petId) {\n         return visitRepository.findByPetId(petId);\n     }\n \n     @GetMapping(\"pets/visits\")\n-    Visits visitsMultiGet(@RequestParam(\"petId\") List<Integer> petIds) {\n+   public Visits visitsMultiGet(@RequestParam(\"petId\") List<Integer> petIds) {\n         final List<Visit> byPetIdIn = visitRepository.findByPetIdIn(petIds);\n         return new Visits(byPetIdIn);\n     }\n \n     @Value\n     static class Visits {\n-        private final List<Visit> items;\n+        List<Visit> items;\n     }\n }\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/b8bc7f2c377acac115bd8efeb19a9a9fd738faa4",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "inputKind": "SIMULATED_SIGNATURE_FROM_REAL_PATCH",
+      "signature": "failOnUnableToExtractRepoInfo",
+      "reviewBasis": "Git metadata extraction no longer fails packaging",
+      "commitSha": "101ffbdf13a0f1f5a42713f88f83fb0fda0849f5",
+      "classification": "RELATED_CANDIDATE",
+      "applicability": "DEPLOYED_VERSION_UNKNOWN",
+      "evidence": [
+        {
+          "id": "225f97ffce9a8a3f8b487df1f1832c9d6ae13393d0cf181205205191cdc7edbe",
+          "repoId": 9,
+          "type": "COMMIT",
+          "sourceSha": "101ffbdf13a0f1f5a42713f88f83fb0fda0849f5",
+          "parentSha": null,
+          "path": "",
+          "symbol": "commit",
+          "modulePath": "",
+          "startLine": 0,
+          "endLine": 0,
+          "locator": {
+            "parents": [
+              "1f8191d5f6eb07d73f207173fa2a4eb19012edcb"
+            ]
+          },
+          "contentHash": "98f2a3d2631af83387b6805e09bf12c169c1dd9488535472f553b5dbd66fae3e",
+          "excerpt": "Do not fail packaging if repo info is absent #91\n\nTry to fix the Maven issue references in #91",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/101ffbdf13a0f1f5a42713f88f83fb0fda0849f5",
+          "truncated": false
+        },
+        {
+          "id": "34ccb2b5465e7e510955bd57bfa938ebbda98f04f3f6ba2f033b2bb7b01ea09a",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "101ffbdf13a0f1f5a42713f88f83fb0fda0849f5",
+          "parentSha": "1f8191d5f6eb07d73f207173fa2a4eb19012edcb",
+          "path": "pom.xml",
+          "symbol": "diff",
+          "modulePath": ".",
+          "startLine": 136,
+          "endLine": 142,
+          "locator": {
+            "newPath": "pom.xml",
+            "oldPath": "pom.xml",
+            "changeType": "MODIFY",
+            "newLineCount": 7,
+            "newStartLine": 136,
+            "oldLineCount": 6,
+            "oldStartLine": 136
+          },
+          "contentHash": "0a0f68cfe3e6051945ce7e45d04ab0986cf572c754020a5c1def4094b7ff3ae1",
+          "excerpt": "@@ -136,6 +136,7 @@\n                             <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties\n                             </generateGitPropertiesFilename>\n                             <failOnNoGitDirectory>false</failOnNoGitDirectory>\n+                            <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>\n                         </configuration>\n                     </plugin>\n                 </plugins>\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/101ffbdf13a0f1f5a42713f88f83fb0fda0849f5",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "inputKind": "SIMULATED_SIGNATURE_FROM_REAL_PATCH",
+      "signature": "lombok.version",
+      "reviewBasis": "POM pins Lombok 1.18.30 for the documented Java 21 issue",
+      "commitSha": "453bfe06a50636273b84776da2be1d3f7f673a8a",
+      "classification": "RELATED_CANDIDATE",
+      "applicability": "DEPLOYED_VERSION_UNKNOWN",
+      "evidence": [
+        {
+          "id": "849df32bbfb2bfe59c7f700555fcfed2dcce4f1105904e5b35ca373d29465bd6",
+          "repoId": 9,
+          "type": "COMMIT",
+          "sourceSha": "453bfe06a50636273b84776da2be1d3f7f673a8a",
+          "parentSha": null,
+          "path": "",
+          "symbol": "commit",
+          "modulePath": "",
+          "startLine": 0,
+          "endLine": 0,
+          "locator": {
+            "parents": [
+              "a6159bf213d696832a6ed5521d7882ce1e82c359"
+            ]
+          },
+          "contentHash": "fd5082c9115f962fad7a81a97a7ff573fa547c80c9a2f333f4f188da628d5523",
+          "excerpt": " Lombok issue fix with Java 21 (#245)\n\n* lombok issue fix\r\n\r\n* Added comment - lombok issue fix",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/453bfe06a50636273b84776da2be1d3f7f673a8a",
+          "truncated": false
+        },
+        {
+          "id": "2829d072b5a43f23b3ee49398afdb8a62f795aecec7c71d787954aeb2c1d03a6",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "453bfe06a50636273b84776da2be1d3f7f673a8a",
+          "parentSha": "a6159bf213d696832a6ed5521d7882ce1e82c359",
+          "path": "pom.xml",
+          "symbol": "diff",
+          "modulePath": ".",
+          "startLine": 62,
+          "endLine": 72,
+          "locator": {
+            "newPath": "pom.xml",
+            "oldPath": "pom.xml",
+            "changeType": "MODIFY",
+            "newLineCount": 11,
+            "newStartLine": 62,
+            "oldLineCount": 6,
+            "oldStartLine": 58
+          },
+          "contentHash": "875aed5fc514bfb1fc02ca35e884e481cdc5c31f5fe6bf168ff31f8ac5ce696a",
+          "excerpt": "@@ -58,6 +62,11 @@\n                 <artifactId>jolokia-core</artifactId>\n                 <version>${jolokia-core.version}</version>\n             </dependency>\n+            <dependency>\n+                <groupId>org.projectlombok</groupId>\n+                <artifactId>lombok</artifactId>\n+                <version>${lombok.version}</version>\n+            </dependency>\n         </dependencies>\n     </dependencyManagement>\n \n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/453bfe06a50636273b84776da2be1d3f7f673a8a",
+          "truncated": false
+        },
+        {
+          "id": "5d5eae56c675fb99a208a3c459ad9697b1b18e5834c6e7e7a945fac64562e2a4",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "453bfe06a50636273b84776da2be1d3f7f673a8a",
+          "parentSha": "a6159bf213d696832a6ed5521d7882ce1e82c359",
+          "path": "pom.xml",
+          "symbol": "diff",
+          "modulePath": ".",
+          "startLine": 32,
+          "endLine": 41,
+          "locator": {
+            "newPath": "pom.xml",
+            "oldPath": "pom.xml",
+            "changeType": "MODIFY",
+            "newLineCount": 10,
+            "newStartLine": 32,
+            "oldLineCount": 6,
+            "oldStartLine": 32
+          },
+          "contentHash": "a723a0357ac6661633dbda84410dde43fa0c0265c61f5b5f04bd697c24a962cd",
+          "excerpt": "@@ -32,6 +32,10 @@\n         <chaos-monkey-spring-boot.version>2.3.10</chaos-monkey-spring-boot.version>\n         <jolokia-core.version>1.7.1</jolokia-core.version>\n \n+        <!-- Workaround for resolving the issue while using the provided lombok dependency in upgraded Java version.\n+        Should be removed while future upgrading-->\n+        <lombok.version>1.18.30</lombok.version>\n+\n         <docker.image.prefix>springcommunity</docker.image.prefix>\n         <docker.image.exposed.port>9090</docker.image.exposed.port>\n         <docker.image.dockerfile.dir>${basedir}</docker.image.dockerfile.dir>\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/453bfe06a50636273b84776da2be1d3f7f673a8a",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "inputKind": "SIMULATED_SIGNATURE_FROM_REAL_PATCH",
+      "signature": "btrfs",
+      "reviewBasis": "Dockerfile introduces intermediate RUN true steps for a documented btrfs build issue",
+      "commitSha": "935bd5120ff56dbf34fd1681d6c4eb91f80afe7d",
+      "classification": "RELATED_CANDIDATE",
+      "applicability": "DEPLOYED_VERSION_UNKNOWN",
+      "evidence": [
+        {
+          "id": "a89fc2df51da04367342dbfe6bc15331986f321b0292ff5b257e564e9d40f66f",
+          "repoId": 9,
+          "type": "COMMIT",
+          "sourceSha": "935bd5120ff56dbf34fd1681d6c4eb91f80afe7d",
+          "parentSha": null,
+          "path": "",
+          "symbol": "commit",
+          "modulePath": "",
+          "startLine": 0,
+          "endLine": 0,
+          "locator": {
+            "parents": [
+              "39f6670e009a66e4b730d4e777e25a8ff7951a59"
+            ]
+          },
+          "contentHash": "8077c386d0d2c3290f94770c76e3214d495d29c798946bbf1d6bb4b2f3700fa1",
+          "excerpt": "fix docker build on btrfs (#255)\n\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/935bd5120ff56dbf34fd1681d6c4eb91f80afe7d",
+          "truncated": false
+        },
+        {
+          "id": "892e747ba8db4ef0ae62ad992519f53f676e69f213f1e56c8c03835f223599d8",
+          "repoId": 9,
+          "type": "DIFF",
+          "sourceSha": "935bd5120ff56dbf34fd1681d6c4eb91f80afe7d",
+          "parentSha": "39f6670e009a66e4b730d4e777e25a8ff7951a59",
+          "path": "docker/Dockerfile",
+          "symbol": "diff",
+          "modulePath": ".",
+          "startLine": 14,
+          "endLine": 28,
+          "locator": {
+            "newPath": "docker/Dockerfile",
+            "oldPath": "docker/Dockerfile",
+            "changeType": "MODIFY",
+            "newLineCount": 15,
+            "newStartLine": 14,
+            "oldLineCount": 7,
+            "oldStartLine": 14
+          },
+          "contentHash": "7a7d8af4e925e58c420f2cd47fade32c892e164d0edfd8de3ce3be036108fa28",
+          "excerpt": "@@ -14,7 +14,15 @@\n ENV SPRING_PROFILES_ACTIVE docker\n \n COPY --from=builder application/dependencies/ ./\n+\n+# fix for https://stackoverflow.com/questions/51115856/docker-failed-to-export-image-failed-to-create-image-failed-to-get-layer\n+# (only last copy caused issue)\n+# this seems to be triggered by using btrfs:\n+# https://github.com/moby/moby/issues/36573\n+RUN true\n COPY --from=builder application/spring-boot-loader/ ./\n+RUN true\n COPY --from=builder application/snapshot-dependencies/ ./\n+RUN true\n COPY --from=builder application/application/ ./\n ENTRYPOINT [\"java\", \"org.springframework.boot.loader.launch.JarLauncher\"]\n",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/commit/935bd5120ff56dbf34fd1681d6c4eb91f80afe7d",
+          "truncated": false
+        }
+      ]
+    }
+  ]
+}
