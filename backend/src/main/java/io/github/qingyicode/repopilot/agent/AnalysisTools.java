@@ -29,12 +29,16 @@ public final class AnalysisTools {
     public AnalysisData.ToolResult compareDependencyChanges() {
         var r=bound.request();
         if(r.task()!=AnalysisData.Task.DEPENDENCY_IMPACT || r.baseSnapshotId()==null) throw DomainException.invalid("WRONG_TASK_TOOL");
-        dependency=dependencies.compare(r.repoId(),r.baseSnapshotId(),r.snapshotId(),r.module(),8);
-        for(var change:dependency.changes()) {
-            if(change.before()!=null) change.before().sources().forEach(s->issue(r.baseSnapshotId(),s.evidenceId(),true));
-            if(change.after()!=null) change.after().sources().forEach(s->issue(r.snapshotId(),s.evidenceId(),true));
+        var candidate=dependencies.compare(r.repoId(),r.baseSnapshotId(),r.snapshotId(),r.module(),8);
+        var refs=new LinkedHashMap<String,Long>();
+        for(var change:candidate.changes()) {
+            if(change.before()!=null) change.before().sources().forEach(s->refs.put(s.evidenceId(),r.baseSnapshotId()));
+            if(change.after()!=null) change.after().sources().forEach(s->refs.put(s.evidenceId(),r.snapshotId()));
         }
-        for(var impact:dependency.impacts()) impact.evidenceIds().forEach(id->issue(impact.view().equals("BASE")?r.baseSnapshotId():r.snapshotId(),id,true));
+        for(var impact:candidate.impacts()) impact.evidenceIds().forEach(id->refs.put(id,impact.view().equals("BASE")?r.baseSnapshotId():r.snapshotId()));
+        if(refs.size()>100) throw DomainException.conflict("EVIDENCE_BUDGET_LIMIT");
+        refs.forEach((id,snapshot)->issue(snapshot,id,false));
+        authoritative.addAll(refs.keySet());dependency=candidate;
         var data=new LinkedHashMap<String,Object>();
         data.put("affectedServices",dependency.affectedServices());
         data.put("changes",dependency.changes().stream().limit(12).map(c->Map.of("module",c.module(),"coordinate",c.coordinate(),"kind",c.kind())).toList());
@@ -46,8 +50,9 @@ public final class AnalysisTools {
     public AnalysisData.ToolResult searchFixCandidates() {
         var r=bound.request();
         if(r.task()!=AnalysisData.Task.INCIDENT_FIX) throw DomainException.invalid("WRONG_TASK_TOOL");
-        incident=incidents.search(r.repoId(),r.snapshotId(),r.module(),r.question(),r.deployedSha());
-        incident.candidates().forEach(c->c.evidence().forEach(e->issue(r.snapshotId(),e.id(),true)));
+        var candidate=incidents.search(r.repoId(),r.snapshotId(),r.module(),r.question(),r.deployedSha());
+        candidate.candidates().forEach(c->c.evidence().forEach(e->issue(r.snapshotId(),e.id(),false)));
+        candidate.candidates().forEach(c->c.evidence().forEach(e->authoritative.add(e.id())));incident=candidate;
         var data=incident.candidates().stream().map(c->Map.of("commitSha",c.commitSha(),"subject",c.subject(),"classification",c.classification(),
                 "applicability",c.applicability(),"matchedTerms",c.matchedTerms(),"evidenceIds",c.evidence().stream().map(Evidence::id).toList())).toList();
         return payload(data.isEmpty()?"EMPTY":"OK",data,authoritative,incident.warnings());
@@ -76,6 +81,20 @@ public final class AnalysisTools {
             issued.put(id,new AnalysisData.Citation(e.id(),snapshot,e.type(),e.sourceSha(),e.path(),e.startLine(),e.endLine(),clip(e.excerpt(),2400),e.sourceUrl()));
         }
         if(business) authoritative.add(id);
+    }
+    void verifyBusinessEvidence() {
+        if(authoritative.isEmpty()) throw DomainException.conflict("NO_BUSINESS_EVIDENCE");
+        for(String id:authoritative) {
+            var citation=issued.get(id);
+            if(citation==null) throw DomainException.conflict("UNVERIFIED_CITATION");
+            var current=indices.evidence(bound.request().repoId(),citation.snapshotId(),id);
+            if(!current.id().equals(id) || current.repoId()!=bound.request().repoId() || !current.sourceSha().equals(citation.sourceSha())
+                    || !current.path().equals(citation.path())) throw DomainException.conflict("EVIDENCE_SCOPE_MISMATCH");
+        }
+        if(dependency!=null && dependency.impacts().stream().anyMatch(i->i.evidenceIds().isEmpty()||!authoritative.containsAll(i.evidenceIds())))
+            throw DomainException.conflict("UNSUPPORTED_IMPACT_PATH");
+        if(incident!=null && incident.candidates().stream().anyMatch(c->!c.classification().equals("RELATED_CANDIDATE")
+                || c.evidence().stream().noneMatch(e->e.type().equals("DIFF")))) throw DomainException.conflict("UNSUPPORTED_FIX_CLAIM");
     }
     private static AnalysisData.ToolResult payload(String status,Object data,Collection<String> ids,List<String> warnings) {
         return new AnalysisData.ToolResult(status,data,ids.stream().limit(40).toList(),warnings,null);

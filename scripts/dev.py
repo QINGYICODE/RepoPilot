@@ -30,16 +30,16 @@ def load_environment():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["backend", "agent", "backend-check", "mysql-test", "upstream-test", "live-llm", "full-check", "dependency-tree"])
+    parser.add_argument("command", choices=["backend", "agent", "agent-check", "backend-check", "mysql-test", "upstream-test", "live-llm", "full-check", "dependency-tree"])
     args = parser.parse_args()
     environment = load_environment()
     command = ["mvn", "-B", "-ntp"]
     if environment.get("MAVEN_REPO_LOCAL"):
         command.append("-Dmaven.repo.local=" + environment["MAVEN_REPO_LOCAL"])
-    if args.command in {"backend", "agent", "mysql-test", "upstream-test", "live-llm", "full-check"}:
+    if args.command in {"backend", "agent", "agent-check", "mysql-test", "upstream-test", "live-llm", "full-check"}:
         if not environment.get("DB_PASSWORD"):
             sys.exit("Set DB_PASSWORD in .env or the environment first.")
-    if args.command in {"live-llm", "full-check", "agent"}:
+    if args.command in {"live-llm", "full-check", "agent", "agent-check"}:
         missing = [name for name in ["LLM_BASE_URL", "LLM_MODEL", "LLM_API_KEY"] if not environment.get(name)]
         if missing:
             sys.exit("Live model check NOT RUN; missing: " + ", ".join(missing))
@@ -47,6 +47,8 @@ def main():
             command += ["spring-boot:run", "-Dspring-boot.run.profiles=llm"]
         else:
             command += ["-P", "upstream-it,live-llm" if args.command == "full-check" else "live-llm", "verify"]
+            if args.command == "agent-check":
+                command += ["-Drepopilot.agent-live=true"]
     elif args.command == "mysql-test":
         command += ["-P", "mysql-it", "verify"]
     elif args.command == "upstream-test":

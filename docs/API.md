@@ -141,11 +141,15 @@ Java 按类型/方法和补充窗口切分；POM 按依赖、属性、管理声�
 
 告警分析使用 `task: INCIDENT_FIX`，无需 baseSnapshotId，question 放告警/日志内容，可提供 module 和 deployedSha。所有 ID 都需替换为已授权仓库的实际值。
 
-状态为 `RUNNING / ANSWERED / PARTIAL / REFUSED / NEEDS_INPUT / UNAVAILABLE`。仓库白名单和快照所属关系在接收任务时核验；不提供登录或多用户 RBAC。未知仓库、越权资源使用既有 HTTP 403/404/409 错误约定。任务内的越界问题、模型越权工具请求和伪造引用使用明确拒答终态。
+状态为 `RUNNING / ANSWERED / PARTIAL / REFUSED / NEEDS_INPUT / UNAVAILABLE / CANCELLED`。仓库白名单和快照所属关系在接收任务时核验；不提供登录或多用户 RBAC。未知仓库、越权资源使用既有 HTTP 403/404/409 错误约定。任务内的越界问题、模型越权工具请求和伪造引用使用明确拒答终态。
 
 结果含 `summary / dependency / incident / citations / events / usage / reasonCode / warnings`。工具事件只记录名称、状态、错误码、缓存与耗时，不记录密钥或模型私有推理。只有经过业务工具与证据核验的结构化事实才能展示为结论；模型自由生成的答案正文不会直接展示。
 
-每次最多 8 次模型请求、12 次工具请求、单工具 4 次请求和 90 秒任务期限；单次模型等待最多 30 秒。重复成功调用复用缓存，连续两次无进展停止；工具错误与无命中分别记录。任务队列有界，满载返回 429。进程重启会将遗留 RUNNING 任务标为 PROCESS_RESTARTED，不隐式重新消费模型额度。
+每次最多 8 次模型请求、12 次工具请求、单工具 4 次请求和 90 秒任务期限；单次模型等待最多 30 秒。重复成功调用复用缓存，连续两次无进展停止；工具错误与无命中分别记录。业务工具已经核验证据后进入 FINALIZE 阶段，关闭后续工具，仅生成动作与引用。任务队列有界，满载返回 429。
+
+`POST /analysis-runs/{id}/cancel` 取消本实例任务，终态不可覆盖；若活跃任务归属另一进程返回 409 / RUN_OWNED_BY_ANOTHER_PROCESS。任务由实例每 15 秒续租，租约 45 秒；进程退出后仅过期任务会标记 PROCESS_RESTARTED，正常停机标记 PROCESS_STOPPED，均不隐式再次调用模型。
+
+上下文固定保留任务、规则和版本，只保留最近两组完整工具往返；按 UTF-8 字节加 schema/协议余量保守估算 token 上界，单次输入上界 24,000、累计上界 60,000。过大输入直接停止，不裁掉约束。使用供应商可靠用量时记录实际输入/输出 token；否则明确 estimatedTokens。`model / promptVersion / knowledgeSha / baseSha` 可用于复核一次执行，未保存模型私有推理。
 
 `usage` 区分模型次数、请求工具次数、实际执行、执行失败、参数/权限拦截和缓存命中。执行失败率应使用 `failedToolCalls / executedToolCalls`，同时单独报告拦截与缓存，避免更改分母制造改善。没有可靠供应商 token 用量时使用保守估算并标记 estimatedTokens。18%→4% 尚不是实测成果。
 
@@ -165,6 +169,7 @@ python3 scripts/dev.py backend-check  # 单元与构建验证
 python3 scripts/dev.py mysql-test     # 本机数据库与本地 Git/HTTP 集成
 python3 scripts/dev.py upstream-test  # 真实 PetClinic 固定版本与五组历史变更
 python3 scripts/dev.py full-check     # 上述检查加真实模型能力探针
+python3 scripts/dev.py agent-check    # 已导入真实快照上的两个模型业务任务与五项修复候选
 ```
 
 真实上游和真实模型验证均需显式选择。日志保存在被忽略的本机目录中，公共开发记录不包含凭据。当前同步工作池按单个后端进程设计，不应由多个实例共享同一镜像目录。

@@ -82,7 +82,7 @@ public class IncidentService {
     }
 
     public static List<String> signatures(String message) {
-        String safe=Redactor.clean(message).replaceAll("\\b[0-9a-fA-F]{8}-[0-9a-fA-F-]{27,}\\b", " ");
+        String safe=Redactor.cleanLog(message).replaceAll("\\b[0-9a-fA-F]{8}-[0-9a-fA-F-]{27,}\\b", " ");
         var matcher=TERMS.matcher(safe); var terms=new LinkedHashSet<String>();
         while(matcher.find()) {
             String value=matcher.group();

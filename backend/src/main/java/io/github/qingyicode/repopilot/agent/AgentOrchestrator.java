@@ -37,6 +37,8 @@ public class AgentOrchestrator implements AutoCloseable {
         You have at most 8 model calls, 12 tool requests and 90 seconds. Duplicate calls are cached; two repeats stop the run.
         On a tool argument error, repair it; do not keep repeating it. On FORBIDDEN, stop.
         Finish ONLY with JSON: {"action":"ANSWER","evidenceIds":["actual returned evidence ID"]}.
+        Business tools verify their evidence on the server. Once a business result is available, phase FINALIZE disables tools:
+        immediately return ANSWER citing just 1-3 returned evidence IDs. Do not copy every ID or attempt extra tool calls.
         If no supported answer is possible, finish ONLY with {"action":"REFUSE","reasonCode":"OUT_OF_SCOPE"}
         or NO_EVIDENCE or INSUFFICIENT_EVIDENCE. No markdown or answer prose. The server renders verified business results.
         """;
@@ -47,16 +49,21 @@ public class AgentOrchestrator implements AutoCloseable {
         if(refusal!=null) return state.result(refusal.startsWith("NEEDS_")?"NEEDS_INPUT":"REFUSED",refusal);
         if(model==null) return state.result("UNAVAILABLE","MODEL_NOT_CONFIGURED");
         if(!(model.getDefaultOptions() instanceof OpenAiChatOptions defaults)) return state.result("UNAVAILABLE","UNSUPPORTED_MODEL_OPTIONS");
+        state.model=defaults.getModel();
         ToolCallback[] callbacks=Arrays.stream(ToolCallbacks.from(tools)).map(callback->guard(callback,state)).toArray(ToolCallback[]::new);
-        var options=defaults.mutate().toolCallbacks(callbacks).maxTokens(1600).maxRetries(0).temperature(0.0).build();
-        var manager=ToolCallingManager.builder().resolutionFallbackEnabled(false).maxTotalToolCalls(MAX_TOOL_CALLS).maxCallsPerTool(4).build();
-        List<Message> history=new ArrayList<>();
-        history.add(new SystemMessage(RULES));
-        history.add(new UserMessage(json.writeValueAsString(bound)));
+        // Counters live outside trimmed messages; framework turn counters must not reset the application's budgets.
+        var manager=ToolCallingManager.builder().resolutionFallbackEnabled(false).unlimitedTotalToolCalls().unlimitedCallsPerTool().build();
+        var context=new AgentContext(RULES,bound);
         while(state.modelCalls<MAX_MODEL_CALLS) {
             if(state.expired()) return state.terminal("TIME_LIMIT");
-            int promptBytes=bytes(history.stream().map(m->m.getText()==null?m.toString():m.getText()).collect(java.util.stream.Collectors.joining("\n")))
-                    +Arrays.stream(callbacks).mapToInt(c->bytes(c.getToolDefinition().inputSchema())+bytes(c.getToolDefinition().description())).sum()+1024;
+            boolean business=tools.dependency!=null || tools.incident!=null;
+            if(business && tools.authoritative.isEmpty()) return state.result("REFUSED","NO_EVIDENCE");
+            ToolCallback[] activeTools=business?new ToolCallback[0]:callbacks;
+            var options=defaults.mutate().toolCallbacks(activeTools).maxTokens(business?512:1600).maxRetries(0).temperature(0.0).build();
+            var history=context.build(Map.of("modelCalls",state.modelCalls,"requestedTools",state.requested,
+                    "phase",business?"FINALIZE":"RETRIEVE","perToolRequests",state.perTool,"verifiedBusinessEvidenceIds",tools.authoritative.stream().limit(3).toList()),activeTools,MAX_INPUT_BYTES);
+            state.compacted=context.removed;
+            int promptBytes=context.size(history,activeTools);
             state.maxPromptBytes=Math.max(state.maxPromptBytes,promptBytes);
             if(promptBytes>MAX_INPUT_BYTES || state.inputTokens+state.outputTokens+promptBytes+1600>MAX_TOTAL_TOKENS)
                 return state.terminal("CONTEXT_BUDGET_LIMIT");
@@ -66,11 +73,12 @@ public class AgentOrchestrator implements AutoCloseable {
                 var activePrompt=new Prompt(List.copyOf(history),options);
                 var pending=modelWorkers.submit(()->model.call(activePrompt));
                 try {response=pending.get(Math.min(30000,state.remainingMillis()),TimeUnit.MILLISECONDS);}
-                catch(TimeoutException timeout) {pending.cancel(true);return state.terminal("TIME_LIMIT");}
+                catch(TimeoutException timeout) {pending.cancel(true);state.failedModelInput(promptBytes);return state.terminal("TIME_LIMIT");}
+                catch(InterruptedException interrupted) {pending.cancel(true);throw interrupted;}
             } catch(InterruptedException interrupted) {
-                Thread.currentThread().interrupt(); return state.terminal("CANCELLED");
-            } catch(ExecutionException|RejectedExecutionException error) {return state.terminal("MODEL_CALL_FAILED");}
-            if(response==null || response.getResult()==null) return state.terminal("MODEL_OUTPUT_INVALID");
+                Thread.currentThread().interrupt();state.failedModelInput(promptBytes);return state.terminal("CANCELLED");
+            } catch(ExecutionException|RejectedExecutionException error) {state.failedModelInput(promptBytes);return state.terminal("MODEL_CALL_FAILED");}
+            if(response==null || response.getResult()==null) {state.failedModelInput(promptBytes);return state.terminal("MODEL_OUTPUT_INVALID");}
             var usage=response.getMetadata().getUsage();
             if(usage!=null && usage.getPromptTokens()!=null && usage.getPromptTokens()>0 && usage.getCompletionTokens()!=null && usage.getCompletionTokens()>0) {
                 state.inputTokens+=usage.getPromptTokens(); state.outputTokens+=usage.getCompletionTokens();
@@ -81,12 +89,18 @@ public class AgentOrchestrator implements AutoCloseable {
             var calls=response.getResult().getOutput().getToolCalls();
             state.requested+=calls.size();
             if(state.requested>MAX_TOOL_CALLS) return state.rejectBatch(calls,"TOOL_BUDGET_LIMIT");
-            Set<String> allowed=new HashSet<>(); Arrays.stream(callbacks).forEach(c->allowed.add(c.getToolDefinition().name()));
+            Set<String> allowed=new HashSet<>(); Arrays.stream(activeTools).forEach(c->allowed.add(c.getToolDefinition().name()));
             for(var call:calls) {
                 if(!allowed.contains(call.name()) || forbiddenArguments(call.arguments())) return state.rejectBatch(calls,"FORBIDDEN");
                 if(call.id()==null || call.id().isBlank() || !state.callIds.add(call.id())) return state.rejectBatch(calls,"INVALID_TOOL_CALL_ID");
+                if(call.name().equals("readEvidence")) {
+                    try {
+                        String ref=json.readTree(call.arguments()).path("evidenceId").asString();
+                        if(ref!=null && ref.matches("[a-f0-9]{64}") && !tools.issued.containsKey(ref)) return state.rejectBatch(calls,"FORBIDDEN");
+                    } catch(RuntimeException ignored) { /* Schema validation returns a repairable error. */ }
+                }
             }
-            try {history=new ArrayList<>(manager.executeToolCalls(new Prompt(history,options),response).conversationHistory());}
+            try {context.append(manager.executeToolCalls(new Prompt(history,options),response).conversationHistory());}
             catch(RuntimeException error) {return state.terminal("TOOL_PROTOCOL_FAILED");}
             state.progress.accept(state.result("RUNNING","TOOLS_EXECUTED"));
             if(state.forbidden) return state.result("REFUSED","FORBIDDEN");
@@ -108,8 +122,9 @@ public class AgentOrchestrator implements AutoCloseable {
                     key=name+json.writeValueAsString(json.readValue(arguments,TreeMap.class));
                 } catch(RuntimeException invalid) {return state.error(name,"INVALID_TOOL_ARGUMENTS",false,start);}
                 if(state.cache.containsKey(key)) {
-                    state.cached++;state.noProgress++;state.event(name,"OK","CACHE_HIT",true,start);
-                    return state.cache.get(key);
+                    String cached=state.cache.get(key);
+                    state.cached++;state.noProgress++;state.event(name,json.readValue(cached,ToolResult.class).status(),"CACHE_HIT",true,start);
+                    return cached;
                 }
                 if(state.attempts.merge(key,1,Integer::sum)>2) return state.error(name,"RETRY_LIMIT",false,start);
                 state.executed++;
@@ -169,8 +184,10 @@ public class AgentOrchestrator implements AutoCloseable {
                 if(!id.isString() || !state.tools.authoritative.contains(id.asString())) return state.result("REFUSED","UNVERIFIED_CITATION");
             if(state.tools.dependency==null && state.tools.incident==null) return state.result("REFUSED","NO_BUSINESS_EVIDENCE");
             if(state.tools.authoritative.isEmpty()) return state.result("REFUSED","NO_EVIDENCE");
+            state.tools.verifyBusinessEvidence();
             return state.result(state.tools.incident!=null || !"COMPLETE".equals(state.tools.dependency.coverage())?"PARTIAL":"ANSWERED","EVIDENCE_VERIFIED");
-        } catch(RuntimeException invalid) {return state.result("REFUSED","MODEL_OUTPUT_INVALID");}
+        } catch(DomainException invalid) {return state.result("REFUSED","EVIDENCE_VERIFICATION_FAILED");}
+        catch(RuntimeException invalid) {return state.result("REFUSED","MODEL_OUTPUT_INVALID");}
     }
     static int bytes(String value) {return value.getBytes(StandardCharsets.UTF_8).length;}
     @PreDestroy @Override public void close() {modelWorkers.shutdownNow();}
@@ -181,10 +198,11 @@ public class AgentOrchestrator implements AutoCloseable {
         final Map<String,String> cache=new HashMap<>();final Map<String,Integer> perTool=new HashMap<>(),attempts=new HashMap<>();
         final Set<String> callIds=new HashSet<>();final List<Event> events=new ArrayList<>();
         int modelCalls,requested,executed,failed,rejected,cached,noProgress,maxPromptBytes,compacted;
-        long inputTokens,outputTokens;boolean estimated,forbidden;
+        long inputTokens,outputTokens;boolean estimated,forbidden;String model="not-called";
         State(String id,Bound bound,AnalysisTools tools,Consumer<Result> progress) {this.id=id;this.bound=bound;this.tools=tools;this.progress=progress;}
         long remainingMillis() {return Math.max(1,90000-TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started));}
         boolean expired() {return System.nanoTime()-started>TimeUnit.SECONDS.toNanos(90) || Thread.currentThread().isInterrupted();}
+        void failedModelInput(int bytes) {inputTokens+=bytes;estimated=true;}
         void event(String tool,String status,String code,boolean hit,long start) {events.add(new Event(events.size()+1,tool,status,code,hit,TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start)));}
         String error(String tool,String code,boolean execution,long start) {
             if(!execution) rejected++;
@@ -192,10 +210,16 @@ public class AgentOrchestrator implements AutoCloseable {
             return json.writeValueAsString(new ToolResult("ERROR",null,List.of(),List.of(),code));
         }
         Result rejectBatch(List<AssistantMessage.ToolCall> calls,String reason) {
-            calls.forEach(call->{rejected++;event(call.name(),"REJECTED",reason,false,System.nanoTime());});
+            calls.forEach(call->{rejected++;event(List.of("compareDependencyChanges","searchFixCandidates","searchRepository","readEvidence").contains(call.name())?call.name():"UNREGISTERED_TOOL","REJECTED",reason,false,System.nanoTime());});
             return result("REFUSED",reason);
         }
-        Result terminal(String reason) {return result(tools.authoritative.isEmpty()?"REFUSED":"PARTIAL",reason);}
+        Result terminal(String reason) {
+            if(!tools.authoritative.isEmpty()) {
+                try {tools.verifyBusinessEvidence();}
+                catch(RuntimeException invalid) {return result("REFUSED","EVIDENCE_VERIFICATION_FAILED");}
+            }
+            return result(tools.authoritative.isEmpty()?"REFUSED":"PARTIAL",reason);
+        }
         Result result(String status,String reason) {
             boolean show=List.of("ANSWERED","PARTIAL").contains(status);
             String summary=switch(reason) {
@@ -217,7 +241,7 @@ public class AgentOrchestrator implements AutoCloseable {
             return new Result(id,status,reason,summary,bound.repository(),bound.knowledgeSha(),bound.baseSha(),citations,
                     show?tools.dependency:null,show?tools.incident:null,List.copyOf(events),
                     new Usage(modelCalls,requested,executed,failed,rejected,cached,inputTokens,outputTokens,estimated,maxPromptBytes,compacted,
-                            TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)),List.copyOf(warnings));
+                            TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)),model,"repo-agent-v1",List.copyOf(warnings));
         }
     }
 }

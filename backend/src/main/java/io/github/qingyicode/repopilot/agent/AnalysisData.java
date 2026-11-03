@@ -20,6 +20,6 @@ public final class AnalysisData {
     public record Result(String id, String status, String reasonCode, String summary, String repository,
                          String knowledgeSha, String baseSha, List<Citation> citations,
                          DependencyData.Result dependency, IncidentData.Result incident,
-                         List<Event> events, Usage usage, List<String> warnings) {}
+                         List<Event> events, Usage usage, String model, String promptVersion, List<String> warnings) {}
     public record ToolResult(String status, Object data, List<String> evidenceIds, List<String> warnings, String error) {}
 }

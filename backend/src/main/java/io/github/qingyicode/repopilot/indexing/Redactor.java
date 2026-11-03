@@ -7,6 +7,10 @@ public final class Redactor {
     private static final Pattern TOKENS = Pattern.compile("(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})");
     private static final Pattern ASSIGNMENT = Pattern.compile("(?im)((?:api[_-]?key|password|access[_-]?token|client[_-]?secret)\\s*[:=]\\s*[\"'])([^\"'\\r\\n]{6,})([\"'])");
     private static final Pattern PRIVATE_KEY = Pattern.compile("-----BEGIN [^-\\r\\n]*PRIVATE KEY-----[\\s\\S]*?-----END [^-\\r\\n]*PRIVATE KEY-----");
+    public static String cleanLog(String source) {
+        return clean(source).replaceAll("(?i)(authorization\\s*[:=]\\s*(?:bearer\\s+)?)[^\\s,;]+", "$1[REDACTED]")
+                .replaceAll("(?i)((?:password|api[_-]?key|access[_-]?token|client[_-]?secret)\\s*[:=]\\s*)[^\\s,;]+", "$1[REDACTED]");
+    }
     public static String clean(String source) {
         String cleaned = TOKENS.matcher(source).replaceAll("[REDACTED]");
         var assignments = ASSIGNMENT.matcher(cleaned); var output = new StringBuilder();

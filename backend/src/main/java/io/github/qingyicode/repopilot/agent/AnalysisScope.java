@@ -29,7 +29,7 @@ public class AnalysisScope {
                 && (input.baseSnapshotId()==null || indices.graph(input.repoId(),input.baseSnapshotId()).modules().stream().noneMatch(m->m.path().equals(module))))
             throw DomainException.invalid("UNKNOWN_SERVICE_MODULE");
         String deployed=input.deployedSha()==null || input.deployedSha().isBlank()?null:RepositoryPolicy.sha(input.deployedSha());
-        var safe=new AnalysisData.Request(input.repoId(),input.snapshotId(),input.task(),Redactor.clean(input.question()),input.baseSnapshotId(),module,deployed);
+        var safe=new AnalysisData.Request(input.repoId(),input.snapshotId(),input.task(),Redactor.cleanLog(input.question()),input.baseSnapshotId(),module,deployed);
         return new AnalysisData.Bound(safe,repo.getOwner()+"/"+repo.getName(),snapshot.commitSha(),baseSha);
     }
     public static String refusal(AnalysisData.Bound bound) {
@@ -45,6 +45,8 @@ public class AnalysisScope {
             }
         }
         if(Pattern.compile("天气|股票|股价|彩票|写.{0,6}(诗|情书)|weather|stock price|horoscope").matcher(text).find()) return "OUT_OF_SCOPE";
+        var explicitRepo=Pattern.compile("(?:仓库|repository|repo)\\s*[:：]?\\s*([a-z0-9_.-]+/[a-z0-9_.-]+)").matcher(text);
+        while(explicitRepo.find()) if(!explicitRepo.group(1).replaceFirst("\\.git$","").equalsIgnoreCase(bound.repository())) return "FORBIDDEN";
         String domain=bound.request().task()==AnalysisData.Task.DEPENDENCY_IMPACT?
                 "依赖|模块|服务|升级|版本|影响|dependency|dependencies|module|service|upgrade|impact|pom":
                 "告警|异常|报错|修复|堆栈|日志|alert|error|exception|fix|tracing|zipkin|failed|timeout";

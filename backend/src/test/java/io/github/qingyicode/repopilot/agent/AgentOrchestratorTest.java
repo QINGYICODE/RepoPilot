@@ -76,11 +76,12 @@ class AgentOrchestratorTest {
         assertThat(result.reasonCode()).isEqualTo("INSUFFICIENT_EVIDENCE");
     }
     @Test void cachesDuplicateCallsAndStopsWithoutAnExtraSummaryCall() {
-        var counter=new AtomicInteger();
-        when(model.call(any(Prompt.class))).thenAnswer(ignored->tool("c"+counter.incrementAndGet(),"compareDependencyChanges","{}"));
+        var calls=new ArrayList<AssistantMessage.ToolCall>();
+        for(int i=0;i<3;i++) calls.add(new AssistantMessage.ToolCall("c"+i,"function","compareDependencyChanges","{}"));
+        when(model.call(any(Prompt.class))).thenReturn(new ChatResponse(List.of(new Generation(AssistantMessage.builder().content("").toolCalls(calls).build()))));
         var result=run();
         assertThat(result.reasonCode()).isEqualTo("NO_PROGRESS");
-        assertThat(result.usage().modelCalls()).isEqualTo(3);
+        assertThat(result.usage().modelCalls()).isEqualTo(1);
         assertThat(result.usage().executedToolCalls()).isEqualTo(1);
         assertThat(result.usage().cachedToolCalls()).isEqualTo(2);
         verify(dependencies,times(1)).compare(1,1,2,null,8);
@@ -107,6 +108,40 @@ class AgentOrchestratorTest {
         assertThat(result.usage().requestedToolCalls()).isEqualTo(13);
         assertThat(result.usage().rejectedToolCalls()).isEqualTo(13);
         verifyNoInteractions(dependencies);
+    }
+    @Test void refusesEvidenceThatChangesScopeDuringFinalVerification() {
+        var valid=index.evidence(1,2,id);
+        var wrong=new RepositoryData.Evidence(id,99,"FILE",sha,null,"api/pom.xml","","api",1,2,Map.of(),"hash","changed","https://github.com/other/repo",false);
+        when(index.evidence(1,2,id)).thenReturn(valid,wrong);
+        when(model.call(any(Prompt.class))).thenReturn(tool("one","compareDependencyChanges","{}"),answer("{\"action\":\"ANSWER\",\"evidenceIds\":[\""+id+"\"]}"));
+        var result=run();
+        assertThat(result.reasonCode()).isEqualTo("EVIDENCE_VERIFICATION_FAILED");
+        assertThat(result.dependency()).isNull();assertThat(result.citations()).isEmpty();
+    }
+    @Test void refusesAnUnissuedEvidenceIdBeforeExecutingAnyToolInTheBatch() {
+        when(model.call(any(Prompt.class))).thenReturn(tool("one","readEvidence","{\"evidenceId\":\""+id+"\"}"));
+        assertThat(run().reasonCode()).isEqualTo("FORBIDDEN");
+        verify(index,never()).evidence(anyLong(),anyLong(),anyString());
+    }
+    @Test void contextCompactionDoesNotResetPerToolOrOverallBudgets() {
+        when(index.search(anyLong(),anyLong(),anyString(),anyString(),isNull(),isNull(),isNull(),isNull(),anyInt(),isNull()))
+                .thenReturn(new RepositoryData.SearchPage(List.of(),null,false,Map.of(),"EXACT"));
+        var sequence=new AtomicInteger();
+        when(model.call(any(Prompt.class))).thenAnswer(ignored->{int n=sequence.incrementAndGet();
+            return tool("id"+n,"searchRepository","{\"query\":\"term"+n+"\",\"type\":\"FILE\"}");});
+        var result=run();
+        assertThat(result.usage().executedToolCalls()).isEqualTo(4);
+        assertThat(result.usage().rejectedToolCalls()).isEqualTo(2);
+        assertThat(result.usage().modelCalls()).isEqualTo(6);
+        assertThat(result.usage().compactedExchanges()).isPositive();
+        assertThat(result.usage().maxPromptBytes()).isLessThanOrEqualTo(AgentOrchestrator.MAX_INPUT_BYTES);
+        assertThat(result.reasonCode()).isEqualTo("NO_PROGRESS");
+    }
+    @Test void stopsBeforeAnOversizedQuestionCanReachTheModel() {
+        var huge=new AnalysisData.Bound(new AnalysisData.Request(1L,2L,AnalysisData.Task.INCIDENT_FIX,"告警"+"长日志".repeat(2600),null,null,null),"fixture/repo",sha,null);
+        var result=agent.run("run",huge,tools,model,ignored->{});
+        assertThat(result.reasonCode()).isEqualTo("CONTEXT_BUDGET_LIMIT");
+        assertThat(result.usage().modelCalls()).isZero();verify(model,never()).call(any(Prompt.class));
     }
     static ChatResponse tool(String callId,String name,String args) {
         return new ChatResponse(List.of(new Generation(AssistantMessage.builder().content("").toolCalls(List.of(new AssistantMessage.ToolCall(callId,"function",name,args))).build())));

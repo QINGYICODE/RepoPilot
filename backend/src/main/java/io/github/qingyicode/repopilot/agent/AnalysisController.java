@@ -12,4 +12,6 @@ public class AnalysisController {
     public AnalysisData.Result submit(@RequestBody AnalysisData.Request request) {return analyses.submit(request);}
     @GetMapping("/{id}")
     public AnalysisData.Result get(@PathVariable String id) {return analyses.get(id);}
+    @PostMapping("/{id}/cancel")
+    public AnalysisData.Result cancel(@PathVariable String id) {return analyses.cancel(id);}
 }

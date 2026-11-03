@@ -1,0 +1,7 @@
+[
+  {"signature":"spring-boot-starter-zipkin","sha":"9a76b4e34cd75f3d6bfa6f15775bf996c59e8989","basis":"POM replaces tracing libraries with Boot 4 Zipkin starter"},
+  {"signature":"visitsMultiGet","sha":"b8bc7f2c377acac115bd8efeb19a9a9fd738faa4","basis":"VisitResource endpoint access modifier changes to public"},
+  {"signature":"failOnUnableToExtractRepoInfo","sha":"101ffbdf13a0f1f5a42713f88f83fb0fda0849f5","basis":"Git metadata extraction no longer fails packaging"},
+  {"signature":"lombok.version","sha":"453bfe06a50636273b84776da2be1d3f7f673a8a","basis":"POM pins Lombok 1.18.30 for the documented Java 21 issue"},
+  {"signature":"btrfs","sha":"935bd5120ff56dbf34fd1681d6c4eb91f80afe7d","basis":"Dockerfile introduces intermediate RUN true steps for a documented btrfs build issue"}
+]

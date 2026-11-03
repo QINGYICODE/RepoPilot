@@ -58,6 +58,8 @@ class IncidentServiceTest {
     @Test void removesSecretsAndBoundsSignatures() {
         assertThat(IncidentService.signatures("error sk-abcdefghijklmnopqrstuvwxyz123456 ALERT_PIPELINE java.net.ConnectException"))
                 .contains("ALERT_PIPELINE","java.net.ConnectException").noneMatch(t->t.contains("sk-")||t.contains("REDACTED"));
+        assertThat(io.github.qingyicode.repopilot.indexing.Redactor.cleanLog("password=supersecret Authorization: Bearer abcdef api_key=testsecret"))
+                .doesNotContain("supersecret","abcdef","testsecret");
         assertThat(service.search(1,2,null,"纯中文且没有可检索符号",null).reasonCode()).isEqualTo("NO_EVIDENCE");
     }
 }

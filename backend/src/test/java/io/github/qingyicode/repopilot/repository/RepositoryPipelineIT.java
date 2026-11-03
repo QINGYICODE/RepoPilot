@@ -38,6 +38,7 @@ class RepositoryPipelineIT {
     static final Path ROOT = temp();
     static final Path REMOTE = ROOT.resolve("remote");
     static String base; static String head; static String removed; static String side;
+    static final java.util.concurrent.CountDownLatch CANCEL_STARTED=new java.util.concurrent.CountDownLatch(1);
     @Autowired SyncService sync;
     @Autowired RepositoryStore repos;
     @Autowired IndexStore indices;
@@ -61,6 +62,9 @@ class RepositoryPipelineIT {
             org.mockito.Mockito.when(model.getDefaultOptions()).thenReturn(org.springframework.ai.openai.OpenAiChatOptions.builder().model("fixture").build());
             org.mockito.Mockito.when(model.call(org.mockito.ArgumentMatchers.any(org.springframework.ai.chat.prompt.Prompt.class))).thenAnswer(call->{
                 org.springframework.ai.chat.prompt.Prompt prompt=call.getArgument(0);
+                if(prompt.getInstructions().stream().anyMatch(m->m.getText()!=null && m.getText().contains("CANCEL_TEST"))) {
+                    CANCEL_STARTED.countDown();Thread.sleep(30000);
+                }
                 var toolMessages=prompt.getInstructions().stream().filter(m->m instanceof org.springframework.ai.chat.messages.ToolResponseMessage)
                         .map(m->(org.springframework.ai.chat.messages.ToolResponseMessage)m).toList();
                 org.springframework.ai.chat.messages.AssistantMessage message;
@@ -177,6 +181,17 @@ class RepositoryPipelineIT {
                 io.github.qingyicode.repopilot.agent.AnalysisData.Task.INCIDENT_FIX,"今天天气怎么样？",null,null,null));
         assertThat(refused.status()).isEqualTo("REFUSED");assertThat(refused.usage().modelCalls()).isZero();
         assertThat(analyses.get(refused.id()).reasonCode()).isEqualTo("OUT_OF_SCOPE");
+    }
+    @Test void cancellationIsPersistedAndCannotBeOverwrittenByWorkerCompletion() throws Exception {
+        var submitted=analyses.submit(new io.github.qingyicode.repopilot.agent.AnalysisData.Request(repoId,headId,
+                io.github.qingyicode.repopilot.agent.AnalysisData.Task.DEPENDENCY_IMPACT,"依赖影响 CANCEL_TEST",baseId,null,null));
+        assertThat(CANCEL_STARTED.await(5,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+        new io.github.qingyicode.repopilot.agent.AnalysisRunStore(jdbc,repos).recover();
+        assertThat(analyses.get(submitted.id()).status()).isEqualTo("RUNNING");
+        assertThat(analyses.cancel(submitted.id()).status()).isEqualTo("CANCELLED");
+        Thread.sleep(100);
+        assertThat(analyses.get(submitted.id()).reasonCode()).isEqualTo("CANCELLED");
+        assertThat(analyses.get(submitted.id()).dependency()).isNull();
     }
     @Test void failuresAndRetriesNeverReplaceTheActiveSnapshot() throws Exception {
         Long active=repos.repository(repoId).getActiveSnapshotId();
