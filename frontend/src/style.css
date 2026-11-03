@@ -1,0 +1,57 @@
+:root { font-family: 'Noto Sans SC', system-ui, sans-serif; color: #23372f; background: #f5f6f2; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+button:disabled { opacity: .5; cursor: wait; }
+a:focus-visible, button:focus-visible { outline: 2px solid #608f63; outline-offset: 5px; }
+.shell { display: flex; min-height: 100vh; }
+.sidebar { width: 246px; padding: 36px 26px; background: #152d27; color: #ecf2e8; display: flex; flex-direction: column; flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 23px; font-weight: 600; letter-spacing: -.8px; }
+.brand-icon { display: grid; place-items: center; width: 33px; height: 36px; border: 1px solid #90af94; border-radius: 9px; color: #c4dc9c; font-size: 21px; }
+.sidebar-caption { color: #9db0a5; margin: 18px 0 52px 2px; font-size: 12px; letter-spacing: 2px; }
+nav { display: grid; gap: 12px; }
+nav a { padding: 13px 14px; font-size: 14px; border-radius: 6px; color: #afc0b5; }
+nav a span { font-size: 10px; margin-right: 13px; opacity: .65; }
+nav a.active { background: #294039; color: #edf4e8; }
+.sidebar-footer { margin-top: auto; padding-top: 100px; font-size: 12px; line-height: 2; color: #bac8bc; }
+.sidebar-footer small { font-size: 10px; color: #81998c; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #86af73; margin-right: 7px; vertical-align: middle; }
+main { width: 100%; max-width: 1440px; padding: 32px 6% 25px; overflow: hidden; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 38px; }
+.eyebrow { font-size: 10px; letter-spacing: 2.4px; color: #78877e; font-weight: 600; }
+.phase-tag, .planned-tag { font-size: 11px; border: 1px solid #d8dfd2; padding: 6px 10px; border-radius: 4px; color: #69775e; }
+.hero { position: relative; min-height: 300px; padding: 14px 0 40px; border-bottom: 1px solid #dce2d7; }
+h1 { font-size: clamp(32px, 3.4vw, 49px); font-weight: 500; line-height: 1.45; letter-spacing: -1.2px; margin: 18px 0; }
+.hero-description { color: #7a847c; line-height: 1.9; font-size: 13px; max-width: 480px; }
+.text-link { display: inline-block; font-size: 12px; margin-top: 17px; color: #405f49; }
+.text-link span { margin-left: 24px; }
+.hero-mark { position: absolute; right: 1%; top: 46px; width: 180px; height: 180px; transform: rotate(-28deg); }
+.hero-mark span { display: block; width: 146px; height: 80px; border: 1px solid #b8c7a7; border-radius: 12px; position: absolute; background: #e7eddd80; }
+.hero-mark span:nth-child(2) { top: 45px; left: 15px; }
+.hero-mark span:nth-child(3) { top: 90px; left: 30px; }
+.section-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 28px 0 17px; }
+h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.section-title button { background: transparent; border: 1px solid #d7dfd0; color: #61715b; border-radius: 4px; padding: 6px 12px; font-size: 11px; }
+.section-title > span { font-size: 11px; color: #8c958a; }
+.status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.status-card { border: 1px solid #dfe4da; padding: 19px 21px; background: #fbfcf8; border-radius: 6px; }
+.status-card p { font-size: 11px; color: #84907f; margin: 0 0 13px; }
+.status-card strong { font-size: 19px; font-weight: 500; display: block; min-height: 33px; }
+.status-card strong.number { font-size: 28px; line-height: 1.1; }
+.number span { font-size: 11px; color: #929b8b; }
+.status-card small { font-size: 10px; color: #9aa292; display: block; margin-top: 9px; }
+.notice { padding: 23px; border: 1px solid #dfe4da; border-radius: 6px; font-size: 13px; color: #75816e; }
+.notice.error { background: #fbf6ee; border-color: #e8dcc7; color: #86704b; }
+.notice p { margin-bottom: 0; line-height: 1.8; font-size: 12px; }
+.roadmap-title { margin-top: 30px; }
+.feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.feature-card { background: #edf0e7; border: 1px solid #e0e5d7; padding: 23px; border-radius: 6px; }
+.feature-number { font-size: 9px; letter-spacing: 1.7px; color: #8d9a7d; }
+h3 { font-size: 18px; font-weight: 500; margin: 15px 0 10px; }
+.feature-card p { font-size: 12px; line-height: 1.9; color: #7a8671; margin-bottom: 22px; }
+.planned-tag { display: inline-block; padding: 4px 8px; background: #f3f5ee; border: none; font-size: 10px; }
+.page-footer { margin-top: 25px; font-size: 9px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; color: #98a18f; }
+.scope-heading { margin-bottom: 38px; }
+@media (max-width: 1100px) { .hero-mark { display: none; } .sidebar { width: 205px; padding: 30px 20px; } main { padding: 30px 5%; } }
+@media (max-width: 760px) { .shell { display: block; } .sidebar { width: 100%; padding: 18px 22px; display: block; } .brand { font-size: 20px; } .sidebar-caption, .sidebar-footer { display: none; } nav { display: flex; margin-top: 18px; gap: 16px; } nav a { padding: 8px 12px; } main { padding: 25px 22px; } .page-header { margin-bottom: 26px; } .status-grid { grid-template-columns: 1fr; } .feature-grid { grid-template-columns: 1fr; } h1 { font-size: 34px; } .status-card { padding: 16px 20px; } }

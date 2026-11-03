@@ -1,0 +1,16 @@
+spring:
+  ai:
+    model:
+      chat: openai
+    openai:
+      api-key: ${LLM_API_KEY}
+      base-url: ${LLM_BASE_URL:https://api.openai.com/v1}
+      timeout: 30s
+      max-retries: 0
+      chat:
+        options:
+          model: ${LLM_MODEL}
+          temperature: 0
+          max-tokens: 512
+    retry:
+      max-attempts: 1
