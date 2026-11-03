@@ -1,5 +1,6 @@
 package io.github.qingyicode.repopilot.repository;
 
+import io.github.qingyicode.repopilot.indexing.IndexStore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,8 +14,9 @@ import org.springframework.web.bind.annotation.*;
 public class RepositoryController {
     private final SyncService sync;
     private final RepositoryStore repositories;
-    public RepositoryController(SyncService sync, RepositoryStore repositories) {
-        this.sync = sync; this.repositories = repositories;
+    private final IndexStore indices;
+    public RepositoryController(SyncService sync, RepositoryStore repositories, IndexStore indices) {
+        this.sync = sync; this.repositories = repositories; this.indices = indices;
     }
     public record RegisterRequest(@NotBlank String owner, @NotBlank String name) {}
     public record SyncRequest(@NotBlank String commitSha) {}
@@ -30,6 +32,18 @@ public class RepositoryController {
     public RepositoryData.SyncJob job(@PathVariable String id) { return repositories.job(id); }
     @GetMapping("/repositories/{repoId}/snapshots")
     public List<RepositoryData.Snapshot> snapshots(@PathVariable long repoId) { return repositories.snapshots(repoId); }
-    @GetMapping("/repositories/{repoId}/snapshots/{snapshotId}/tree")
-    public Object tree(@PathVariable long repoId,@PathVariable long snapshotId) { return sync.tree(repoId,snapshotId); }
+    @GetMapping("/repositories/{repoId}/snapshots/{snapshotId}/files")
+    public Object files(@PathVariable long repoId, @PathVariable long snapshotId, @RequestParam(required=false) String path,
+                        @RequestParam(defaultValue="1") int startLine, @RequestParam(defaultValue="80") int endLine) {
+        return path == null ? indices.files(repoId,snapshotId) : indices.file(repoId,snapshotId,path,startLine,endLine);
+    }
+    @GetMapping("/repositories/{repoId}/snapshots/{snapshotId}/search")
+    public RepositoryData.SearchPage search(@PathVariable long repoId, @PathVariable long snapshotId, @RequestParam String q,
+            @RequestParam(required=false) String type, @RequestParam(required=false) String path, @RequestParam(required=false) String symbol,
+            @RequestParam(required=false) String sourceSha, @RequestParam(required=false) String module,
+            @RequestParam(defaultValue="20") int limit, @RequestParam(required=false) String cursor) {
+        return indices.search(repoId,snapshotId,q,type,path,symbol,sourceSha,module,limit,cursor);
+    }
+    @GetMapping("/repositories/{repoId}/snapshots/{snapshotId}/evidence/{id}")
+    public RepositoryData.Evidence evidence(@PathVariable long repoId, @PathVariable long snapshotId, @PathVariable String id) { return indices.evidence(repoId,snapshotId,id); }
 }

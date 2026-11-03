@@ -36,7 +36,7 @@ public class CapabilityProbeService {
         var options = defaults.mutate().toolCallbacks(ToolCallbacks.from(tools)).build();
         var prompt = new Prompt(List.of(
                 new SystemMessage("You verify RepoPilot's actual capabilities. First call getProjectCapabilities exactly once, with no arguments. "
-                        + "After the result, return ONLY a JSON object with phase, repositoryCount, and indexed=false. "
+                        + "After the result, return ONLY a JSON object with phase and repositoryCount. "
                         + "Use the tool's phase and repositoryCount exactly. No markdown, guesses or additional tool calls."),
                 new UserMessage("Read the current project capabilities using the tool and report its actual phase and repository count.")), options);
 
@@ -66,8 +66,7 @@ public class CapabilityProbeService {
         var actual = tools.lastSnapshot();
         if (!output.isObject() || !actual.phase().equals(output.path("phase").asString())
                 || !output.path("repositoryCount").isIntegralNumber()
-                || output.path("repositoryCount").asLong() != actual.repositoryCount()
-                || !output.path("indexed").isBoolean() || output.path("indexed").asBoolean()) {
+                || output.path("repositoryCount").asLong() != actual.repositoryCount()) {
             throw new IllegalStateException("MODEL_OUTPUT_NOT_SUPPORTED_BY_TOOL");
         }
         return new ProbeResult(2, tools.invocations(), actual.phase(), actual.repositoryCount());

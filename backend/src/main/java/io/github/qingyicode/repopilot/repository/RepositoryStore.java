@@ -110,15 +110,6 @@ public class RepositoryStore {
     public void finishExisting(String jobId, long snapshotId) {
         jdbc.update("UPDATE sync_job SET status='READY',snapshot_id=?,error_code=NULL,lease_until=NULL WHERE id=?", snapshotId, jobId);
     }
-    @Transactional
-    public void publishMetadata(Snapshot snapshot,String jobId,Map<String,Object> coverage,Map<String,Object> stats) {
-        jdbc.update("INSERT INTO dependency_graph(snapshot_id,graph_json) VALUES (?,?) ON DUPLICATE KEY UPDATE graph_json=VALUES(graph_json)",
-                snapshot.id(),json.writeValueAsString(Map.of("modules",List.of(),"edges",List.of(),"warnings",List.of("DEPENDENCY_GRAPH_NOT_BUILT"))));
-        jdbc.update("UPDATE repository_snapshot SET status='READY',coverage_json=?,stats_json=? WHERE id=?",
-                json.writeValueAsString(coverage),json.writeValueAsString(stats),snapshot.id());
-        jdbc.update("UPDATE repository SET active_snapshot_id=? WHERE id=?",snapshot.id(),snapshot.repoId());
-        finishExisting(jobId,snapshot.id());
-    }
     private SyncJob jobRow(ResultSet rs, int row) throws SQLException {
         return new SyncJob(rs.getString("id"), rs.getLong("repo_id"), rs.getString("target_sha"),
                 rs.getObject("snapshot_id", Long.class), rs.getString("status"), rs.getInt("attempts"),

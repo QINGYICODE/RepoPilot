@@ -4,7 +4,7 @@
 
 RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变更影响与历史修复检索。项目以明确的代码仓库和版本为分析边界，通过工具收集代码、配置和提交记录，为分析结论提供可复核的依据。
 
-项目提供仓库白名单登记、GitHub 身份校验、固定 SHA 同步、异步任务和快照元数据查询。后端使用 Spring Boot、MySQL 和 Spring AI，接口说明见 [API 文档](docs/API.md)。
+项目提供仓库登记与固定 SHA 同步，以及代码、commit 和 diff 的证据索引、检索与行号核验。后端使用 Spring Boot、MySQL 和 Spring AI，接口说明见 [API 文档](docs/API.md)。
 
 ## 应用场景
 

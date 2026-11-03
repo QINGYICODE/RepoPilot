@@ -3,6 +3,8 @@ package io.github.qingyicode.repopilot.repository;
 import io.github.qingyicode.repopilot.common.DomainException;
 import io.github.qingyicode.repopilot.common.RepositoryPolicy;
 import io.github.qingyicode.repopilot.config.RepositorySettings;
+import io.github.qingyicode.repopilot.indexing.IndexBuilder;
+import io.github.qingyicode.repopilot.indexing.IndexStore;
 import jakarta.annotation.PreDestroy;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -19,6 +21,8 @@ public class SyncService {
     private final RepositoryPolicy policy;
     private final GitHubGateway github;
     private final GitMirror mirrors;
+    private final IndexBuilder indexer;
+    private final IndexStore indices;
     private final RepositorySettings settings;
     private final Set<String> active = ConcurrentHashMap.newKeySet();
     private final ThreadPoolExecutor workers = new ThreadPoolExecutor(2,2,0,TimeUnit.SECONDS,new ArrayBlockingQueue<>(4),task -> {
@@ -26,9 +30,9 @@ public class SyncService {
     });
 
     public SyncService(RepositoryStore repositories, RepositoryPolicy policy, GitHubGateway github, GitMirror mirrors,
-                       RepositorySettings settings) {
+                       IndexBuilder indexer, IndexStore indices, RepositorySettings settings) {
         this.repositories = repositories; this.policy = policy; this.github = github; this.mirrors = mirrors;
-        this.settings = settings;
+        this.indexer = indexer; this.indices = indices; this.settings = settings;
     }
     public RepositoryRecord register(String owner, String name) {
         String fullName = policy.allowedName(owner,name);
@@ -68,11 +72,8 @@ public class SyncService {
             if (snapshot.status().equals("READY")) { repositories.finishExisting(job.id(),snapshot.id()); return; }
             mirrors.withSnapshot(record,job.targetSha(),repository -> {
                 repositories.indexing(job.id(),snapshot.id());
-                var tree = inspect(repository,job.targetSha());
-                repositories.publishMetadata(snapshot,job.id(),java.util.Map.of("level","PARTIAL","sourceScope","METADATA_ONLY",
-                        "historyComplete",false,"warnings",java.util.List.of("CODE_INDEX_NOT_BUILT","HISTORY_INDEX_NOT_BUILT")),
-                        java.util.Map.of("treeSha",tree.get("treeSha"),"fileCount",tree.get("fileCount"),"commitCount",0));
-                return null;
+                var product = indexer.build(record,job.targetSha(),repository);
+                indices.publish(snapshot,job.id(),product); return null;
             });
         } catch (DomainException failure) { repositories.fail(job.id(),failure.code()); }
         catch (Exception failure) {
@@ -80,23 +81,6 @@ public class SyncService {
             org.slf4j.LoggerFactory.getLogger(SyncService.class).warn("Sync {} failed ({})",job.id(),failure.getClass().getSimpleName());
             repositories.fail(job.id(),"INDEXING_FAILED");
         } finally { active.remove(job.id()); }
-    }
-    public java.util.Map<String,Object> tree(long repoId,long snapshotId) {
-        var snapshot=repositories.snapshot(repoId,snapshotId);
-        return mirrors.withSnapshot(repositories.repository(repoId),snapshot.commitSha(),repo->inspect(repo,snapshot.commitSha()));
-    }
-    private java.util.Map<String,Object> inspect(org.eclipse.jgit.lib.Repository repository,String sha) {
-        try(var walk=new org.eclipse.jgit.revwalk.RevWalk(repository);var tree=new org.eclipse.jgit.treewalk.TreeWalk(repository)) {
-            var commit=walk.parseCommit(org.eclipse.jgit.lib.ObjectId.fromString(sha));
-            tree.addTree(commit.getTree());tree.setRecursive(true);
-            var entries=new java.util.ArrayList<java.util.Map<String,Object>>();
-            boolean truncated=false;
-            while(tree.next()) {
-                if(entries.size()>=settings.maxFiles()){truncated=true;break;}
-                entries.add(java.util.Map.of("path",tree.getPathString(),"objectId",tree.getObjectId(0).name(),"mode",tree.getFileMode(0).toString()));
-            }
-            return java.util.Map.of("sourceSha",sha,"treeSha",commit.getTree().name(),"fileCount",entries.size(),"entries",entries,"truncated",truncated);
-        } catch(java.io.IOException failure){throw DomainException.conflict("GIT_TREE_READ_FAILED");}
     }
     @PreDestroy public void close() { workers.shutdownNow(); }
 }

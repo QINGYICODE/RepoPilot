@@ -19,8 +19,10 @@
         <spring-ai.version>2.0.2</spring-ai.version>
         <mybatis-plus.version>3.5.18</mybatis-plus.version>
         <jgit.version>7.8.0.202609011348-r</jgit.version>
+        <javaparser.version>3.28.2</javaparser.version>
         <repopilot.mysql-it>false</repopilot.mysql-it>
         <repopilot.live-llm>false</repopilot.live-llm>
+        <repopilot.upstream-it>false</repopilot.upstream-it>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -42,6 +44,11 @@
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
             <version>${jgit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>${javaparser.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -103,6 +110,7 @@
                     <systemPropertyVariables>
                         <repopilot.mysql-it>${repopilot.mysql-it}</repopilot.mysql-it>
                         <repopilot.live-llm>${repopilot.live-llm}</repopilot.live-llm>
+                        <repopilot.upstream-it>${repopilot.upstream-it}</repopilot.upstream-it>
                     </systemPropertyVariables>
                 </configuration>
                 <executions><execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution></executions>
@@ -110,6 +118,13 @@
         </plugins>
     </build>
     <profiles>
+        <profile>
+            <id>upstream-it</id>
+            <properties>
+                <repopilot.mysql-it>true</repopilot.mysql-it>
+                <repopilot.upstream-it>true</repopilot.upstream-it>
+            </properties>
+        </profile>
         <profile>
             <id>mysql-it</id>
             <properties><repopilot.mysql-it>true</repopilot.mysql-it></properties>
