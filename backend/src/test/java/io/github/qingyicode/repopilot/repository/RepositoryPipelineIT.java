@@ -42,6 +42,7 @@ class RepositoryPipelineIT {
     @Autowired RepositoryStore repos;
     @Autowired IndexStore indices;
     @Autowired DependencyService dependencies;
+    @Autowired io.github.qingyicode.repopilot.incident.IncidentService incidents;
     @Autowired JdbcTemplate jdbc;
     @org.springframework.boot.test.web.server.LocalServerPort int port;
     long repoId;
@@ -76,6 +77,7 @@ class RepositoryPipelineIT {
             base=commit(git,"Initial fixture with ALERT_PIPELINE");
             write("pom.xml",root("2"));
             Files.move(REMOTE.resolve("lib/src/main/java/example/Demo.java"),REMOTE.resolve("lib/src/main/java/example/Renamed.java"));
+            write("lib/src/main/java/example/Renamed.java","package example;\nclass Demo {\n @Deprecated\n void fail() { throw new IllegalStateException(\"ALERT_PIPELINE retry enabled 连接失败\"); }\n}\n");
             head=commit(git,"fix: ALERT_PIPELINE dependency update");
             write("lib/pom.xml",child("lib","")); removed=commit(git,"Remove obsolete external core");
             git.checkout().setCreateBranch(true).setName("side").setStartPoint(base).call();
@@ -121,6 +123,20 @@ class RepositoryPipelineIT {
         long other=sync.register("fixture","other").getId();
         assertThatThrownBy(()->indices.evidence(other,headId,current.id())).hasMessage("SNAPSHOT_NOT_READY");
         assertThatThrownBy(()->indices.file(repoId,headId,"../secret",1,2)).hasMessage("INVALID_REPOSITORY_PATH");
+    }
+    @Test void incidentCandidatesUseRealPatchAndJgitDeploymentAncestry() {
+        var result=incidents.search(repoId,headId,"lib","ALERT_PIPELINE",base);
+        assertThat(result.status()).isEqualTo("PARTIAL");
+        assertThat(result.candidates()).singleElement().satisfies(c->{
+            assertThat(c.commitSha()).isEqualTo(head);
+            assertThat(c.classification()).isEqualTo("RELATED_CANDIDATE");
+            assertThat(c.applicability()).isEqualTo("COMMIT_NOT_IN_DEPLOYED_ANCESTRY");
+            c.evidence().forEach(e->assertThat(indices.evidence(repoId,headId,e.id())).isEqualTo(e));
+        });
+        assertThat(incidents.search(repoId,headId,"lib","ALERT_PIPELINE",head).candidates().getFirst().applicability())
+                .isEqualTo("COMMIT_PRESENT_IN_DEPLOYED_ANCESTRY");
+        assertThat(incidents.search(repoId,headId,"lib","NO_SUCH_SIGNATURE_987",base).reasonCode()).isEqualTo("NO_EVIDENCE");
+        assertThatThrownBy(()->incidents.search(repoId,headId,"other","ALERT_PIPELINE",base)).hasMessage("UNKNOWN_SERVICE_MODULE");
     }
     @Test void failuresAndRetriesNeverReplaceTheActiveSnapshot() throws Exception {
         Long active=repos.repository(repoId).getActiveSnapshotId();

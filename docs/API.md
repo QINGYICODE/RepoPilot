@@ -115,6 +115,20 @@ Java 按类型/方法和补充窗口切分；POM 按依赖、属性、管理声�
 
 当前实现覆盖本地 parent、properties、版本管理和模块消费关系。外部 parent/BOM、profile、完整 Maven 传递版本仲裁、插件依赖及运行时 HTTP 调用不做完整解析，因此结果为声明层面的评审与回归范围，不能解释成“升级一定故障”或“其他服务完全不受影响”。
 
+## 告警历史修复候选
+
+`POST /repositories/{repoId}/fix-candidates`
+
+```json
+{"snapshotId": 29, "service": "spring-petclinic-api-gateway", "message": "spring-boot-starter-zipkin tracing", "deployedSha": null}
+```
+
+快照 ID 和模块路径需使用实际数据。`service`、`deployedSha` 可省略；告警正文最多 8,000 字符。当前从日志抽取最多六个英文异常、符号和配置词，在固定快照的 COMMIT/DIFF 中做有界字面检索；纯中文且无可定位符号可能无法召回。
+
+候选必须同时存在修复语义的提交说明和包含匹配词的实际增删行；只有标题、上下文行或纯重命名不会被认作候选。最多返回三个 `RELATED_CANDIDATE`，包含完整 SHA、实际证据和匹配词。无候选返回 `REFUSED / NO_EVIDENCE`，有候选返回 `PARTIAL / CANDIDATE_ONLY`；均不声称已确认该告警与提交的对应关系。
+
+提供部署 SHA 时，JGit 只读本地镜像，先验证它属于知识版本的祖先，再检查候选是否已在部署祖先中。结果不代表完成 cherry-pick 等价补丁、后续 revert 或运行时适用性验证；查询截断和索引覆盖限制随响应返回。此接口不会触发网络拉取。
+
 ## 配置与验证
 
 | 环境变量 | 作用 |

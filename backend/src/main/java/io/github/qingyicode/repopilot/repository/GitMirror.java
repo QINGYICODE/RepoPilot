@@ -26,6 +26,20 @@ public class GitMirror {
     private final ConcurrentHashMap<Long, ReentrantLock> locks = new ConcurrentHashMap<>();
     public GitMirror(RepositorySettings settings) { this.settings = settings; }
 
+    /** Read the existing bare mirror only; analysis never fetches or checks out code. */
+    public boolean isAncestor(RepositoryRecord record, String ancestor, String descendant) {
+        RepositoryPolicy.sha(ancestor); RepositoryPolicy.sha(descendant);
+        Path root = settings.storageDirectory().toAbsolutePath().normalize();
+        Path directory = root.resolve(record.getId() + ".git");
+        if (Files.isSymbolicLink(root) || Files.isSymbolicLink(directory)) throw DomainException.invalid("UNSAFE_STORAGE_PATH");
+        try (var repository = new FileRepositoryBuilder().setGitDir(directory.toFile()).setMustExist(true).build();
+             var walk = new RevWalk(repository)) {
+            return walk.isMergedInto(walk.parseCommit(ObjectId.fromString(ancestor)), walk.parseCommit(ObjectId.fromString(descendant)));
+        } catch (IOException failure) {
+            throw DomainException.conflict("COMMIT_RELATION_UNAVAILABLE");
+        }
+    }
+
     public <T> T withSnapshot(RepositoryRecord record, String sha, Function<Repository, T> action) {
         return withRemote(record, sha, "https://github.com/" + record.getOwner() + "/" + record.getName() + ".git", action);
     }
