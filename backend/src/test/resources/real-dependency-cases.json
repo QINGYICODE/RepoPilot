@@ -1,0 +1,76 @@
+[
+  {
+    "baseSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+    "headSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+    "subject": "Update Spring Boot Admin to 4.0.2",
+    "coordinate": "de.codecentric:spring-boot-admin-starter-server",
+    "before": "3.4.1",
+    "after": "4.0.2",
+    "expectedServices": [
+      "spring-petclinic-admin-server"
+    ],
+    "expectedChanges": 2,
+    "reviewBasis": "Reviewed original POM diff and direct dependency consumers at the fixed commits",
+    "pomDiff": "diff --git a/spring-petclinic-admin-server/pom.xml b/spring-petclinic-admin-server/pom.xml\nindex 8e36fe6..c8fd598 100644\n--- a/spring-petclinic-admin-server/pom.xml\n+++ b/spring-petclinic-admin-server/pom.xml\n@@ -16,7 +16,7 @@\n     </parent>\n \n     <properties>\n-        <spring-boot-admin.version>3.4.1</spring-boot-admin.version>\n+        <spring-boot-admin.version>4.0.2</spring-boot-admin.version>\n         <docker.image.exposed.port>9090</docker.image.exposed.port>\n         <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>\n     </properties>\n"
+  },
+  {
+    "baseSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+    "headSha": "d7805f37ba073cd9523fb8510d570a4a1f2687f8",
+    "subject": "Bump org.webjars:bootstrap from 3.3.7-1 to 3.4.0 in /spring-petclinic-api-gateway (#269)",
+    "coordinate": "org.webjars:bootstrap",
+    "before": "3.3.7-1",
+    "after": "3.4.0",
+    "expectedServices": [
+      "spring-petclinic-api-gateway"
+    ],
+    "expectedChanges": 1,
+    "reviewBasis": "Reviewed original POM diff and direct dependency consumers at the fixed commits",
+    "pomDiff": "diff --git a/spring-petclinic-api-gateway/pom.xml b/spring-petclinic-api-gateway/pom.xml\nindex f86fa13..f870bd9 100644\n--- a/spring-petclinic-api-gateway/pom.xml\n+++ b/spring-petclinic-api-gateway/pom.xml\n@@ -15,7 +15,8 @@\n     </parent>\n \n     <properties>\n-        <webjars-bootstrap.version>3.3.7-1</webjars-bootstrap.version>\n+        <!-- Any bootstrap version upgrade must be reported in the wro4j.xml file -->\n+        <webjars-bootstrap.version>3.4.0</webjars-bootstrap.version>\n         <webjars-jquery.version>3.6.0</webjars-jquery.version>\n         <webjars-angular.version>1.8.2</webjars-angular.version>\n         <webjars-angular-ui-router.version>1.0.20</webjars-angular-ui-router.version>\n"
+  },
+  {
+    "baseSha": "9fc2e399f3ccc121f6cfbcee1bd982132c21b57b",
+    "headSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+    "subject": "Bump to Chaos Monkey 3.1.0 (#264)",
+    "coordinate": "de.codecentric:chaos-monkey-spring-boot",
+    "before": "2.3.10",
+    "after": "3.1.0",
+    "expectedServices": [
+      "spring-petclinic-customers-service",
+      "spring-petclinic-vets-service",
+      "spring-petclinic-visits-service"
+    ],
+    "expectedChanges": 3,
+    "reviewBasis": "Reviewed original POM diff and direct dependency consumers at the fixed commits",
+    "pomDiff": "diff --git a/pom.xml b/pom.xml\nindex 48a93ca..bca3066 100644\n--- a/pom.xml\n+++ b/pom.xml\n@@ -29,7 +29,7 @@\n         <java.version>17</java.version>\n \n         <spring-cloud.version>2023.0.1</spring-cloud.version>\n-        <chaos-monkey-spring-boot.version>2.3.10</chaos-monkey-spring-boot.version>\n+        <chaos-monkey-spring-boot.version>3.1.0</chaos-monkey-spring-boot.version>\n         <jolokia-core.version>1.7.1</jolokia-core.version>\n \n         <!-- Workaround for resolving the issue while using the provided lombok dependency in upgraded Java version.\n"
+  },
+  {
+    "baseSha": "159be8fee79b5fd03c6bfac9c0ae630aaed7ff50",
+    "headSha": "a538be29295061f1aca3c3d29febeaef38eae7fd",
+    "subject": "Upgrade to Spring Cloud 2023.0.0 (#249)",
+    "coordinate": "de.codecentric:spring-boot-admin-starter-server",
+    "before": "3.0.4",
+    "after": "3.2.0",
+    "expectedServices": [
+      "spring-petclinic-admin-server"
+    ],
+    "expectedChanges": 2,
+    "reviewBasis": "Reviewed original POM diff and direct dependency consumers at the fixed commits",
+    "pomDiff": "diff --git a/pom.xml b/pom.xml\nindex 2481f48..af085ba 100644\n--- a/pom.xml\n+++ b/pom.xml\n@@ -6,12 +6,12 @@\n     <parent>\n         <groupId>org.springframework.boot</groupId>\n         <artifactId>spring-boot-starter-parent</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n     </parent>\n \n     <groupId>org.springframework.samples</groupId>\n     <artifactId>spring-petclinic-microservices</artifactId>\n-    <version>3.0.9</version>\n+    <version>3.2.0</version>\n     <name>${project.artifactId}</name>\n     <packaging>pom</packaging>\n \n@@ -28,7 +28,7 @@\n     <properties>\n         <java.version>17</java.version>\n \n-        <spring-cloud.version>2022.0.4</spring-cloud.version>\n+        <spring-cloud.version>2023.0.0</spring-cloud.version>\n         <chaos-monkey-spring-boot.version>2.3.10</chaos-monkey-spring-boot.version>\n         <jolokia-core.version>1.7.1</jolokia-core.version>\n \ndiff --git a/spring-petclinic-admin-server/pom.xml b/spring-petclinic-admin-server/pom.xml\nindex 7207515..ff3d7f0 100644\n--- a/spring-petclinic-admin-server/pom.xml\n+++ b/spring-petclinic-admin-server/pom.xml\n@@ -12,11 +12,11 @@\n     <parent>\n         <groupId>org.springframework.samples</groupId>\n         <artifactId>spring-petclinic-microservices</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n     </parent>\n \n     <properties>\n-        <spring-boot-admin.version>3.0.4</spring-boot-admin.version>\n+        <spring-boot-admin.version>3.2.0</spring-boot-admin.version>\n         <docker.image.exposed.port>9090</docker.image.exposed.port>\n         <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>\n     </properties>\ndiff --git a/spring-petclinic-api-gateway/pom.xml b/spring-petclinic-api-gateway/pom.xml\nindex cc440f2..1c8df11 100644\n--- a/spring-petclinic-api-gateway/pom.xml\n+++ b/spring-petclinic-api-gateway/pom.xml\n@@ -11,7 +11,7 @@\n     <parent>\n         <groupId>org.springframework.samples</groupId>\n         <artifactId>spring-petclinic-microservices</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n     </parent>\n \n     <properties>\ndiff --git a/spring-petclinic-config-server/pom.xml b/spring-petclinic-config-server/pom.xml\nindex a2a9534..1bda2a9 100644\n--- a/spring-petclinic-config-server/pom.xml\n+++ b/spring-petclinic-config-server/pom.xml\n@@ -11,7 +11,7 @@\n     <parent>\n         <groupId>org.springframework.samples</groupId>\n         <artifactId>spring-petclinic-microservices</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n     </parent>\n \n     <properties>\ndiff --git a/spring-petclinic-customers-service/pom.xml b/spring-petclinic-customers-service/pom.xml\nindex 8c2fa3b..a8de245 100644\n--- a/spring-petclinic-customers-service/pom.xml\n+++ b/spring-petclinic-customers-service/pom.xml\n@@ -11,7 +11,7 @@\n \t<parent>\n \t\t<groupId>org.springframework.samples</groupId>\n \t\t<artifactId>spring-petclinic-microservices</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n \t</parent>\n \n     <properties>\ndiff --git a/spring-petclinic-discovery-server/pom.xml b/spring-petclinic-discovery-server/pom.xml\nindex f90a49a..4710136 100644\n--- a/spring-petclinic-discovery-server/pom.xml\n+++ b/spring-petclinic-discovery-server/pom.xml\n@@ -11,7 +11,7 @@\n     <parent>\n         <groupId>org.springframework.samples</groupId>\n         <artifactId>spring-petclinic-microservices</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n     </parent>\n \n     <properties>\ndiff --git a/spring-petclinic-vets-service/pom.xml b/spring-petclinic-vets-service/pom.xml\nindex 3a4141e..a3427f4 100644\n--- a/spring-petclinic-vets-service/pom.xml\n+++ b/spring-petclinic-vets-service/pom.xml\n@@ -11,7 +11,7 @@\n \t<parent>\n \t\t<groupId>org.springframework.samples</groupId>\n \t\t<artifactId>spring-petclinic-microservices</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n \t</parent>\n \n     <properties>\ndiff --git a/spring-petclinic-visits-service/pom.xml b/spring-petclinic-visits-service/pom.xml\nindex a8f7f24..cc89d53 100644\n--- a/spring-petclinic-visits-service/pom.xml\n+++ b/spring-petclinic-visits-service/pom.xml\n@@ -11,7 +11,7 @@\n     <parent>\n         <groupId>org.springframework.samples</groupId>\n         <artifactId>spring-petclinic-microservices</artifactId>\n-        <version>3.0.9</version>\n+        <version>3.2.0</version>\n     </parent>\n \n     <properties>\n"
+  },
+  {
+    "baseSha": "ec50c28d6571fa5779b9117da8b9092443ef1297",
+    "headSha": "a6159bf213d696832a6ed5521d7882ce1e82c359",
+    "subject": "Add database observability (#244)",
+    "coordinate": "net.ttddyy.observation:datasource-micrometer-spring-boot",
+    "before": null,
+    "after": "1.0.2",
+    "expectedServices": [
+      "spring-petclinic-customers-service",
+      "spring-petclinic-vets-service",
+      "spring-petclinic-visits-service"
+    ],
+    "expectedChanges": 3,
+    "reviewBasis": "Reviewed original POM diff and direct dependency consumers at the fixed commits",
+    "pomDiff": "diff --git a/spring-petclinic-customers-service/pom.xml b/spring-petclinic-customers-service/pom.xml\nindex 1d8e070..1f7085c 100644\n--- a/spring-petclinic-customers-service/pom.xml\n+++ b/spring-petclinic-customers-service/pom.xml\n@@ -94,6 +94,11 @@\n             <groupId>io.zipkin.reporter2</groupId>\n             <artifactId>zipkin-reporter-brave</artifactId>\n         </dependency>\n+        <dependency>\n+            <groupId>net.ttddyy.observation</groupId>\n+            <artifactId>datasource-micrometer-spring-boot</artifactId>\n+            <version>1.0.2</version>\n+        </dependency>\n \n         <!-- Testing -->\n         <dependency>\ndiff --git a/spring-petclinic-vets-service/pom.xml b/spring-petclinic-vets-service/pom.xml\nindex d754791..5c9ebc8 100644\n--- a/spring-petclinic-vets-service/pom.xml\n+++ b/spring-petclinic-vets-service/pom.xml\n@@ -114,6 +114,11 @@\n             <groupId>io.zipkin.reporter2</groupId>\n             <artifactId>zipkin-reporter-brave</artifactId>\n         </dependency>\n+        <dependency>\n+            <groupId>net.ttddyy.observation</groupId>\n+            <artifactId>datasource-micrometer-spring-boot</artifactId>\n+            <version>1.0.2</version>\n+        </dependency>\n \n         <!-- Testing -->\n         <dependency>\ndiff --git a/spring-petclinic-visits-service/pom.xml b/spring-petclinic-visits-service/pom.xml\nindex 7528b24..53dd6e6 100644\n--- a/spring-petclinic-visits-service/pom.xml\n+++ b/spring-petclinic-visits-service/pom.xml\n@@ -93,6 +93,11 @@\n             <groupId>io.zipkin.reporter2</groupId>\n             <artifactId>zipkin-reporter-brave</artifactId>\n         </dependency>\n+        <dependency>\n+            <groupId>net.ttddyy.observation</groupId>\n+            <artifactId>datasource-micrometer-spring-boot</artifactId>\n+            <version>1.0.2</version>\n+        </dependency>\n \n         <!-- Testing -->\n         <dependency>\n"
+  }
+]

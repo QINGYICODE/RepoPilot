@@ -23,13 +23,13 @@ public class CapabilityService {
 
     public CapabilitySnapshot snapshot() {
         return new CapabilitySnapshot(
-                "RepoPilot", "D3",
+                "RepoPilot", "D4",
                 Map.of("java", System.getProperty("java.version"),
                         "springBoot", SpringBootVersion.getVersion(),
                         "springAi", build.get("spring-ai"),
                         "mybatisPlus", build.get("mybatis-plus")),
                 repositoryMapper.selectCount(null), environment.acceptsProfiles(Profiles.of("llm")),
-                List.of("MYSQL_PERSISTENCE", "FLYWAY_MIGRATION", "READ_ONLY_CAPABILITY_TOOL", "REPOSITORY_SYNC", "CODE_EVIDENCE_SEARCH"),
+                List.of("MYSQL_PERSISTENCE", "FLYWAY_MIGRATION", "READ_ONLY_CAPABILITY_TOOL", "REPOSITORY_SYNC", "CODE_EVIDENCE_SEARCH", "DEPENDENCY_IMPACT"),
                 List.of("HISTORICAL_FIX_SEARCH", "EVIDENCE_GATE"));
     }
 }

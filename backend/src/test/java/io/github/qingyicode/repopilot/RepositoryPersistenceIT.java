@@ -62,7 +62,7 @@ class RepositoryPersistenceIT {
                     .timeout(Duration.ofSeconds(10)).GET().build(), HttpResponse.BodyHandlers.ofString());
             assertThat(capabilities.statusCode()).isEqualTo(200);
             var snapshot = JsonMapper.builder().build().readValue(capabilities.body(), CapabilitySnapshot.class);
-            assertThat(snapshot.phase()).isEqualTo("D3");
+            assertThat(snapshot.phase()).isEqualTo("D4");
             assertThat(snapshot.liveModelEnabled()).isFalse();
             assertThat(snapshot.versions()).containsEntry("springBoot", "4.1.2").containsEntry("springAi", "2.0.2");
             var health = client.send(HttpRequest.newBuilder(

@@ -4,7 +4,7 @@
 
 RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变更影响与历史修复检索。项目以明确的代码仓库和版本为分析边界，通过工具收集代码、配置和提交记录，为分析结论提供可复核的依据。
 
-项目提供仓库登记与固定 SHA 同步，以及代码、commit 和 diff 的证据索引、检索与行号核验。后端使用 Spring Boot、MySQL 和 Spring AI，接口说明见 [API 文档](docs/API.md)。
+项目提供仓库登记与固定 SHA 同步、代码与提交历史证据检索、Maven 依赖变更影响分析，以及 Spring AI 只读工具调用验证。Vue 工作台可查看同步进度、快照覆盖范围、依赖路径和原文证据。
 
 ## 应用场景
 
@@ -33,7 +33,7 @@ RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变�
 | 数据持久化 | MySQL、MyBatis-Plus、Flyway |
 | 测试与观测 | JUnit、Actuator、Micrometer |
 
-仓库层使用 GitHub API 和 JGit 绑定允许的仓库与明确版本，不执行目标仓库脚本。
+工具层使用 GitHub API、JGit、JavaParser 和静态 Maven 解析器组织证据，由应用负责仓库白名单、固定快照和结果核验。依赖分析覆盖声明使用关系，外部 BOM、profile 与运行时调用的限制会随结果返回。
 
 ## 快速开始
 
@@ -63,6 +63,8 @@ npm run dev
 
 访问 `http://127.0.0.1:5173`。前端通过 `/api` 代理访问 `http://127.0.0.1:8080`，工作台读取后端的实际服务状态。
 
+在“仓库分析”页登记允许访问的 GitHub 仓库，输入完整 commit SHA 建立索引，再选择快照检索证据或比较依赖。允许列表和可选网络代理通过 `.env.example` 中的配置项设置，接口用法见 [API 文档](docs/API.md)。
+
 ### 连接模型
 
 在 `.env` 中配置 `LLM_BASE_URL`、`LLM_MODEL` 和 `LLM_API_KEY`，然后在项目根目录执行只读工具调用验证：
@@ -85,4 +87,5 @@ docs/       项目设计、开发记录与验证资料
 ## 相关文档
 
 - [项目文档](docs/项目文档.md)
+- [API 文档](docs/API.md)
 - [开发记录](docs/开发记录.md)

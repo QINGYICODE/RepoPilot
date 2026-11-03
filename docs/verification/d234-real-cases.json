@@ -1,0 +1,769 @@
+{
+  "repository": "spring-petclinic/spring-petclinic-microservices",
+  "commitSha": "3858f9c630cf989bb6809a86edf47c2be78dc9f1",
+  "indexVersion": "v2.2",
+  "snapshotStatistics": {
+    "treeSha": "59132f770ff97b83fec8e783ba4d63cc1bcddb8a",
+    "fileCount": 141,
+    "hunkCount": 8423,
+    "durationMs": 15980,
+    "commitCount": 761,
+    "moduleCount": 9,
+    "evidenceCount": 10135,
+    "reusedBlobCount": 0
+  },
+  "historyComplete": true,
+  "coverage": "PARTIAL",
+  "warningCategories": {
+    "CONTENT_REDACTED": 1,
+    "PROFILES_NOT_EVALUATED": 9,
+    "UNRESOLVED_PARENT": 1,
+    "UNRESOLVED_BOM": 10,
+    "UNRESOLVED_DEPENDENCY": 97,
+    "DIFF_HUNK_TRUNCATED": 1,
+    "DIFF_FILE_SIZE_LIMIT": 1
+  },
+  "verifiedCases": [
+    {
+      "subject": "Update Spring Boot Admin to 4.0.2",
+      "baseSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+      "headSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+      "affectedServices": [
+        "spring-petclinic-admin-server"
+      ],
+      "changes": [
+        {
+          "module": "spring-petclinic-admin-server",
+          "coordinate": "de.codecentric:spring-boot-admin-server-ui",
+          "kind": "MODIFIED",
+          "before": "3.4.1",
+          "after": "4.0.2"
+        },
+        {
+          "module": "spring-petclinic-admin-server",
+          "coordinate": "de.codecentric:spring-boot-admin-starter-server",
+          "kind": "MODIFIED",
+          "before": "3.4.1",
+          "after": "4.0.2"
+        }
+      ],
+      "paths": [
+        {
+          "changeId": "db5d93c2bb26944f5e31",
+          "service": "spring-petclinic-admin-server",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-server-ui@3.4.1"
+          ],
+          "evidenceIds": [
+            "dcfc94f281348c1be3c853eb0106667fc2dd88ff96d87fca586ce7eef8db0d40",
+            "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae"
+          ]
+        },
+        {
+          "changeId": "db5d93c2bb26944f5e31",
+          "service": "spring-petclinic-admin-server",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-server-ui@4.0.2"
+          ],
+          "evidenceIds": [
+            "4718d2963e5d085780ef9570d1d43c1d72b5407a65d32663788f4a29644a4479",
+            "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053"
+          ]
+        },
+        {
+          "changeId": "4b2d7cc0fdef2b53937c",
+          "service": "spring-petclinic-admin-server",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-starter-server@3.4.1"
+          ],
+          "evidenceIds": [
+            "d9fa7324f59f87aed71c98b575a8f636ec8788b7ae6c3965dbbcaebebdaf1e32",
+            "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae"
+          ]
+        },
+        {
+          "changeId": "4b2d7cc0fdef2b53937c",
+          "service": "spring-petclinic-admin-server",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-starter-server@4.0.2"
+          ],
+          "evidenceIds": [
+            "a28c5e1a7e1171c3bbd631772313c39c89ba6e06102201ccc9b7dfbcb819e48a",
+            "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053"
+          ]
+        }
+      ],
+      "evidenceLocators": [
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 49,
+          "endLine": 53,
+          "evidenceId": "dcfc94f281348c1be3c853eb0106667fc2dd88ff96d87fca586ce7eef8db0d40",
+          "sourceSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/17cad88d533554f53c634cfa78211ea2f51b0a46/spring-petclinic-admin-server/pom.xml#L49-L53"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 19,
+          "endLine": 19,
+          "evidenceId": "4236689a012dc68ca58f595b7c526a31e74be9d5a9962f86508d7aa90d034bae",
+          "sourceSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/17cad88d533554f53c634cfa78211ea2f51b0a46/spring-petclinic-admin-server/pom.xml#L19-L19"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 49,
+          "endLine": 53,
+          "evidenceId": "4718d2963e5d085780ef9570d1d43c1d72b5407a65d32663788f4a29644a4479",
+          "sourceSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/597ad1fbfabadfef4ed8a1d475f7f34aa2666aab/spring-petclinic-admin-server/pom.xml#L49-L53"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 19,
+          "endLine": 19,
+          "evidenceId": "ade71506deb826407dee9d5557dca435bbbe5fd968428c5edc01361b3313f053",
+          "sourceSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/597ad1fbfabadfef4ed8a1d475f7f34aa2666aab/spring-petclinic-admin-server/pom.xml#L19-L19"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 44,
+          "endLine": 48,
+          "evidenceId": "d9fa7324f59f87aed71c98b575a8f636ec8788b7ae6c3965dbbcaebebdaf1e32",
+          "sourceSha": "17cad88d533554f53c634cfa78211ea2f51b0a46",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/17cad88d533554f53c634cfa78211ea2f51b0a46/spring-petclinic-admin-server/pom.xml#L44-L48"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 44,
+          "endLine": 48,
+          "evidenceId": "a28c5e1a7e1171c3bbd631772313c39c89ba6e06102201ccc9b7dfbcb819e48a",
+          "sourceSha": "597ad1fbfabadfef4ed8a1d475f7f34aa2666aab",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/597ad1fbfabadfef4ed8a1d475f7f34aa2666aab/spring-petclinic-admin-server/pom.xml#L44-L48"
+        }
+      ],
+      "reusedBlobCount": 132
+    },
+    {
+      "subject": "Bump org.webjars:bootstrap from 3.3.7-1 to 3.4.0 in /spring-petclinic-api-gateway (#269)",
+      "baseSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+      "headSha": "d7805f37ba073cd9523fb8510d570a4a1f2687f8",
+      "affectedServices": [
+        "spring-petclinic-api-gateway"
+      ],
+      "changes": [
+        {
+          "module": "spring-petclinic-api-gateway",
+          "coordinate": "org.webjars:bootstrap",
+          "kind": "MODIFIED",
+          "before": "3.3.7-1",
+          "after": "3.4.0"
+        }
+      ],
+      "paths": [
+        {
+          "changeId": "918336d4b42832b779a5",
+          "service": "spring-petclinic-api-gateway",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-api-gateway",
+            "org.webjars:bootstrap@3.3.7-1"
+          ],
+          "evidenceIds": [
+            "fb921bb974b345f22c80adb2ca056bdd8bdda807e2d3ca8501f9cc9b2182692d",
+            "8d14829d125930d1c934b8eb5fcfd789897d20ff0bab4cfa2f6df646b974b629"
+          ]
+        },
+        {
+          "changeId": "918336d4b42832b779a5",
+          "service": "spring-petclinic-api-gateway",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-api-gateway",
+            "org.webjars:bootstrap@3.4.0"
+          ],
+          "evidenceIds": [
+            "d5cd8aa6047f01b2efda0e049e43b0cc2db0f92093d1587767408cbd93a23d15",
+            "a10aee60fa32a5866a9827eea95180c166776243aa3d4f7600c3dc541d98dbe3"
+          ]
+        }
+      ],
+      "evidenceLocators": [
+        {
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 113,
+          "endLine": 117,
+          "evidenceId": "fb921bb974b345f22c80adb2ca056bdd8bdda807e2d3ca8501f9cc9b2182692d",
+          "sourceSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/85f8f36556121a28f765d55fb4d6510edd2165d3/spring-petclinic-api-gateway/pom.xml#L113-L117"
+        },
+        {
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 18,
+          "endLine": 18,
+          "evidenceId": "8d14829d125930d1c934b8eb5fcfd789897d20ff0bab4cfa2f6df646b974b629",
+          "sourceSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/85f8f36556121a28f765d55fb4d6510edd2165d3/spring-petclinic-api-gateway/pom.xml#L18-L18"
+        },
+        {
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 114,
+          "endLine": 118,
+          "evidenceId": "d5cd8aa6047f01b2efda0e049e43b0cc2db0f92093d1587767408cbd93a23d15",
+          "sourceSha": "d7805f37ba073cd9523fb8510d570a4a1f2687f8",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/d7805f37ba073cd9523fb8510d570a4a1f2687f8/spring-petclinic-api-gateway/pom.xml#L114-L118"
+        },
+        {
+          "path": "spring-petclinic-api-gateway/pom.xml",
+          "startLine": 19,
+          "endLine": 19,
+          "evidenceId": "a10aee60fa32a5866a9827eea95180c166776243aa3d4f7600c3dc541d98dbe3",
+          "sourceSha": "d7805f37ba073cd9523fb8510d570a4a1f2687f8",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/d7805f37ba073cd9523fb8510d570a4a1f2687f8/spring-petclinic-api-gateway/pom.xml#L19-L19"
+        }
+      ],
+      "reusedBlobCount": 115
+    },
+    {
+      "subject": "Bump to Chaos Monkey 3.1.0 (#264)",
+      "baseSha": "9fc2e399f3ccc121f6cfbcee1bd982132c21b57b",
+      "headSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+      "affectedServices": [
+        "spring-petclinic-customers-service",
+        "spring-petclinic-vets-service",
+        "spring-petclinic-visits-service"
+      ],
+      "changes": [
+        {
+          "module": "spring-petclinic-customers-service",
+          "coordinate": "de.codecentric:chaos-monkey-spring-boot",
+          "kind": "MODIFIED",
+          "before": "2.3.10",
+          "after": "3.1.0"
+        },
+        {
+          "module": "spring-petclinic-vets-service",
+          "coordinate": "de.codecentric:chaos-monkey-spring-boot",
+          "kind": "MODIFIED",
+          "before": "2.3.10",
+          "after": "3.1.0"
+        },
+        {
+          "module": "spring-petclinic-visits-service",
+          "coordinate": "de.codecentric:chaos-monkey-spring-boot",
+          "kind": "MODIFIED",
+          "before": "2.3.10",
+          "after": "3.1.0"
+        }
+      ],
+      "paths": [
+        {
+          "changeId": "7815b0f227ae688171c1",
+          "service": "spring-petclinic-customers-service",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-customers-service",
+            "de.codecentric:chaos-monkey-spring-boot@2.3.10"
+          ],
+          "evidenceIds": [
+            "6836159489aac1cc42b10bb7306ce4af9231c6cfa1ea8414536a357d43ef02ec",
+            "ca7a7491fa0fd962e2d7249a7ce43a15508ea8f81db4de2271e040352b3eda1e",
+            "c0446dd1dbf45c519dcf818a0b7eb219aeb6df1fb7a4bc71d43530608282f995"
+          ]
+        },
+        {
+          "changeId": "7815b0f227ae688171c1",
+          "service": "spring-petclinic-customers-service",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-customers-service",
+            "de.codecentric:chaos-monkey-spring-boot@3.1.0"
+          ],
+          "evidenceIds": [
+            "9f95fa1c79bd8ac4958dd986fcbd077ab2fcc5c1d010841720f7c9e009e12b5c",
+            "1bed43935f3bc43cdaaf0ef5914acdb05865dee274a3c7a4a0f36a8e3442cd2a",
+            "2337a8dbbe345487211d0d4534d6966f40cee41ecab17f94887e2c53835ad5ab"
+          ]
+        },
+        {
+          "changeId": "211d8b845929b2072bf7",
+          "service": "spring-petclinic-vets-service",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-vets-service",
+            "de.codecentric:chaos-monkey-spring-boot@2.3.10"
+          ],
+          "evidenceIds": [
+            "00f01b60ecc7fd5645262aaa0af13ff7330c54059180bd6668a8d244eca8d1c9",
+            "ca7a7491fa0fd962e2d7249a7ce43a15508ea8f81db4de2271e040352b3eda1e",
+            "c0446dd1dbf45c519dcf818a0b7eb219aeb6df1fb7a4bc71d43530608282f995"
+          ]
+        },
+        {
+          "changeId": "211d8b845929b2072bf7",
+          "service": "spring-petclinic-vets-service",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-vets-service",
+            "de.codecentric:chaos-monkey-spring-boot@3.1.0"
+          ],
+          "evidenceIds": [
+            "1ad01a13b6e304310598a13bb3250e0181d85deade6ef6216e9b9e4538453a3c",
+            "1bed43935f3bc43cdaaf0ef5914acdb05865dee274a3c7a4a0f36a8e3442cd2a",
+            "2337a8dbbe345487211d0d4534d6966f40cee41ecab17f94887e2c53835ad5ab"
+          ]
+        },
+        {
+          "changeId": "73bac26023e04df97335",
+          "service": "spring-petclinic-visits-service",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-visits-service",
+            "de.codecentric:chaos-monkey-spring-boot@2.3.10"
+          ],
+          "evidenceIds": [
+            "275fb9832d70152590d408f912874f5b55efe6cb925e44e7b7db2d56e342909d",
+            "ca7a7491fa0fd962e2d7249a7ce43a15508ea8f81db4de2271e040352b3eda1e",
+            "c0446dd1dbf45c519dcf818a0b7eb219aeb6df1fb7a4bc71d43530608282f995"
+          ]
+        },
+        {
+          "changeId": "73bac26023e04df97335",
+          "service": "spring-petclinic-visits-service",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-visits-service",
+            "de.codecentric:chaos-monkey-spring-boot@3.1.0"
+          ],
+          "evidenceIds": [
+            "40bff7068ab936678d97811cac0633b8449040ebf6938d446d500e992ed789d7",
+            "1bed43935f3bc43cdaaf0ef5914acdb05865dee274a3c7a4a0f36a8e3442cd2a",
+            "2337a8dbbe345487211d0d4534d6966f40cee41ecab17f94887e2c53835ad5ab"
+          ]
+        }
+      ],
+      "evidenceLocators": [
+        {
+          "path": "spring-petclinic-customers-service/pom.xml",
+          "startLine": 77,
+          "endLine": 80,
+          "evidenceId": "6836159489aac1cc42b10bb7306ce4af9231c6cfa1ea8414536a357d43ef02ec",
+          "sourceSha": "9fc2e399f3ccc121f6cfbcee1bd982132c21b57b",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/9fc2e399f3ccc121f6cfbcee1bd982132c21b57b/spring-petclinic-customers-service/pom.xml#L77-L80"
+        },
+        {
+          "path": "pom.xml",
+          "startLine": 61,
+          "endLine": 65,
+          "evidenceId": "ca7a7491fa0fd962e2d7249a7ce43a15508ea8f81db4de2271e040352b3eda1e",
+          "sourceSha": "9fc2e399f3ccc121f6cfbcee1bd982132c21b57b",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/9fc2e399f3ccc121f6cfbcee1bd982132c21b57b/pom.xml#L61-L65"
+        },
+        {
+          "path": "pom.xml",
+          "startLine": 32,
+          "endLine": 32,
+          "evidenceId": "c0446dd1dbf45c519dcf818a0b7eb219aeb6df1fb7a4bc71d43530608282f995",
+          "sourceSha": "9fc2e399f3ccc121f6cfbcee1bd982132c21b57b",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/9fc2e399f3ccc121f6cfbcee1bd982132c21b57b/pom.xml#L32-L32"
+        },
+        {
+          "path": "spring-petclinic-customers-service/pom.xml",
+          "startLine": 77,
+          "endLine": 80,
+          "evidenceId": "9f95fa1c79bd8ac4958dd986fcbd077ab2fcc5c1d010841720f7c9e009e12b5c",
+          "sourceSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/85f8f36556121a28f765d55fb4d6510edd2165d3/spring-petclinic-customers-service/pom.xml#L77-L80"
+        },
+        {
+          "path": "pom.xml",
+          "startLine": 61,
+          "endLine": 65,
+          "evidenceId": "1bed43935f3bc43cdaaf0ef5914acdb05865dee274a3c7a4a0f36a8e3442cd2a",
+          "sourceSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/85f8f36556121a28f765d55fb4d6510edd2165d3/pom.xml#L61-L65"
+        },
+        {
+          "path": "pom.xml",
+          "startLine": 32,
+          "endLine": 32,
+          "evidenceId": "2337a8dbbe345487211d0d4534d6966f40cee41ecab17f94887e2c53835ad5ab",
+          "sourceSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/85f8f36556121a28f765d55fb4d6510edd2165d3/pom.xml#L32-L32"
+        },
+        {
+          "path": "spring-petclinic-vets-service/pom.xml",
+          "startLine": 97,
+          "endLine": 100,
+          "evidenceId": "00f01b60ecc7fd5645262aaa0af13ff7330c54059180bd6668a8d244eca8d1c9",
+          "sourceSha": "9fc2e399f3ccc121f6cfbcee1bd982132c21b57b",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/9fc2e399f3ccc121f6cfbcee1bd982132c21b57b/spring-petclinic-vets-service/pom.xml#L97-L100"
+        },
+        {
+          "path": "spring-petclinic-vets-service/pom.xml",
+          "startLine": 97,
+          "endLine": 100,
+          "evidenceId": "1ad01a13b6e304310598a13bb3250e0181d85deade6ef6216e9b9e4538453a3c",
+          "sourceSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/85f8f36556121a28f765d55fb4d6510edd2165d3/spring-petclinic-vets-service/pom.xml#L97-L100"
+        },
+        {
+          "path": "spring-petclinic-visits-service/pom.xml",
+          "startLine": 76,
+          "endLine": 79,
+          "evidenceId": "275fb9832d70152590d408f912874f5b55efe6cb925e44e7b7db2d56e342909d",
+          "sourceSha": "9fc2e399f3ccc121f6cfbcee1bd982132c21b57b",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/9fc2e399f3ccc121f6cfbcee1bd982132c21b57b/spring-petclinic-visits-service/pom.xml#L76-L79"
+        },
+        {
+          "path": "spring-petclinic-visits-service/pom.xml",
+          "startLine": 76,
+          "endLine": 79,
+          "evidenceId": "40bff7068ab936678d97811cac0633b8449040ebf6938d446d500e992ed789d7",
+          "sourceSha": "85f8f36556121a28f765d55fb4d6510edd2165d3",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/85f8f36556121a28f765d55fb4d6510edd2165d3/spring-petclinic-visits-service/pom.xml#L76-L79"
+        }
+      ],
+      "reusedBlobCount": 70
+    },
+    {
+      "subject": "Upgrade to Spring Cloud 2023.0.0 (#249)",
+      "baseSha": "159be8fee79b5fd03c6bfac9c0ae630aaed7ff50",
+      "headSha": "a538be29295061f1aca3c3d29febeaef38eae7fd",
+      "affectedServices": [
+        "spring-petclinic-admin-server"
+      ],
+      "changes": [
+        {
+          "module": "spring-petclinic-admin-server",
+          "coordinate": "de.codecentric:spring-boot-admin-server-ui",
+          "kind": "MODIFIED",
+          "before": "3.0.4",
+          "after": "3.2.0"
+        },
+        {
+          "module": "spring-petclinic-admin-server",
+          "coordinate": "de.codecentric:spring-boot-admin-starter-server",
+          "kind": "MODIFIED",
+          "before": "3.0.4",
+          "after": "3.2.0"
+        }
+      ],
+      "paths": [
+        {
+          "changeId": "db5d93c2bb26944f5e31",
+          "service": "spring-petclinic-admin-server",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-server-ui@3.0.4"
+          ],
+          "evidenceIds": [
+            "68bde4d4b5b3da6664c00935690ac2aff78ea60749659f8a6a8dca1014a3789b",
+            "99754ff2dadce987d91df8a5cc2b6a70a5ec14bd2e2c95cde6d0c6fe8cf6edff"
+          ]
+        },
+        {
+          "changeId": "db5d93c2bb26944f5e31",
+          "service": "spring-petclinic-admin-server",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-server-ui@3.2.0"
+          ],
+          "evidenceIds": [
+            "90b4e551d6ed8b75f7aa2aac1fd7d263f2826ad011b64986e1bc0ac80f7e5f38",
+            "733d36b8ee16d288b76129ade093f0b00b888a1ff535bc94aa0c32a9d4fd81b1"
+          ]
+        },
+        {
+          "changeId": "4b2d7cc0fdef2b53937c",
+          "service": "spring-petclinic-admin-server",
+          "view": "BASE",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-starter-server@3.0.4"
+          ],
+          "evidenceIds": [
+            "f44452ba8a590e0d0a53091c58d9c07ea7d27fb141a240d312efd4ee5f199b41",
+            "99754ff2dadce987d91df8a5cc2b6a70a5ec14bd2e2c95cde6d0c6fe8cf6edff"
+          ]
+        },
+        {
+          "changeId": "4b2d7cc0fdef2b53937c",
+          "service": "spring-petclinic-admin-server",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-admin-server",
+            "de.codecentric:spring-boot-admin-starter-server@3.2.0"
+          ],
+          "evidenceIds": [
+            "280b2cb11122745d73460106e46728aac7dffd0f7bdd71b164cf6b1302559620",
+            "733d36b8ee16d288b76129ade093f0b00b888a1ff535bc94aa0c32a9d4fd81b1"
+          ]
+        }
+      ],
+      "evidenceLocators": [
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 45,
+          "endLine": 49,
+          "evidenceId": "68bde4d4b5b3da6664c00935690ac2aff78ea60749659f8a6a8dca1014a3789b",
+          "sourceSha": "159be8fee79b5fd03c6bfac9c0ae630aaed7ff50",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/159be8fee79b5fd03c6bfac9c0ae630aaed7ff50/spring-petclinic-admin-server/pom.xml#L45-L49"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 19,
+          "endLine": 19,
+          "evidenceId": "99754ff2dadce987d91df8a5cc2b6a70a5ec14bd2e2c95cde6d0c6fe8cf6edff",
+          "sourceSha": "159be8fee79b5fd03c6bfac9c0ae630aaed7ff50",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/159be8fee79b5fd03c6bfac9c0ae630aaed7ff50/spring-petclinic-admin-server/pom.xml#L19-L19"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 45,
+          "endLine": 49,
+          "evidenceId": "90b4e551d6ed8b75f7aa2aac1fd7d263f2826ad011b64986e1bc0ac80f7e5f38",
+          "sourceSha": "a538be29295061f1aca3c3d29febeaef38eae7fd",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/a538be29295061f1aca3c3d29febeaef38eae7fd/spring-petclinic-admin-server/pom.xml#L45-L49"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 19,
+          "endLine": 19,
+          "evidenceId": "733d36b8ee16d288b76129ade093f0b00b888a1ff535bc94aa0c32a9d4fd81b1",
+          "sourceSha": "a538be29295061f1aca3c3d29febeaef38eae7fd",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/a538be29295061f1aca3c3d29febeaef38eae7fd/spring-petclinic-admin-server/pom.xml#L19-L19"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 40,
+          "endLine": 44,
+          "evidenceId": "f44452ba8a590e0d0a53091c58d9c07ea7d27fb141a240d312efd4ee5f199b41",
+          "sourceSha": "159be8fee79b5fd03c6bfac9c0ae630aaed7ff50",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/159be8fee79b5fd03c6bfac9c0ae630aaed7ff50/spring-petclinic-admin-server/pom.xml#L40-L44"
+        },
+        {
+          "path": "spring-petclinic-admin-server/pom.xml",
+          "startLine": 40,
+          "endLine": 44,
+          "evidenceId": "280b2cb11122745d73460106e46728aac7dffd0f7bdd71b164cf6b1302559620",
+          "sourceSha": "a538be29295061f1aca3c3d29febeaef38eae7fd",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/a538be29295061f1aca3c3d29febeaef38eae7fd/spring-petclinic-admin-server/pom.xml#L40-L44"
+        }
+      ],
+      "reusedBlobCount": 105
+    },
+    {
+      "subject": "Add database observability (#244)",
+      "baseSha": "ec50c28d6571fa5779b9117da8b9092443ef1297",
+      "headSha": "a6159bf213d696832a6ed5521d7882ce1e82c359",
+      "affectedServices": [
+        "spring-petclinic-customers-service",
+        "spring-petclinic-vets-service",
+        "spring-petclinic-visits-service"
+      ],
+      "changes": [
+        {
+          "module": "spring-petclinic-customers-service",
+          "coordinate": "net.ttddyy.observation:datasource-micrometer-spring-boot",
+          "kind": "ADDED",
+          "before": null,
+          "after": "1.0.2"
+        },
+        {
+          "module": "spring-petclinic-vets-service",
+          "coordinate": "net.ttddyy.observation:datasource-micrometer-spring-boot",
+          "kind": "ADDED",
+          "before": null,
+          "after": "1.0.2"
+        },
+        {
+          "module": "spring-petclinic-visits-service",
+          "coordinate": "net.ttddyy.observation:datasource-micrometer-spring-boot",
+          "kind": "ADDED",
+          "before": null,
+          "after": "1.0.2"
+        }
+      ],
+      "paths": [
+        {
+          "changeId": "c0c43dfef27b29efb389",
+          "service": "spring-petclinic-customers-service",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-customers-service",
+            "net.ttddyy.observation:datasource-micrometer-spring-boot@1.0.2"
+          ],
+          "evidenceIds": [
+            "8f892185be27547aaec33bab4cacc37a799b9df578c9251f722640fc4375ae1a"
+          ]
+        },
+        {
+          "changeId": "cca7d93bbe11bb6a5f9e",
+          "service": "spring-petclinic-vets-service",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-vets-service",
+            "net.ttddyy.observation:datasource-micrometer-spring-boot@1.0.2"
+          ],
+          "evidenceIds": [
+            "1ff6246bec72cf2a6e2d1b33667cfa5d7751da0f410ff4fffc33f6c4a752c1f0"
+          ]
+        },
+        {
+          "changeId": "9ee1c670ef959ab05a9f",
+          "service": "spring-petclinic-visits-service",
+          "view": "HEAD",
+          "kind": "DECLARED_IMPACT",
+          "scope": "compile",
+          "path": [
+            "spring-petclinic-visits-service",
+            "net.ttddyy.observation:datasource-micrometer-spring-boot@1.0.2"
+          ],
+          "evidenceIds": [
+            "50aad106c855fc30011228d2e791bc92062edcdb667b51bfabba5b0e372f131c"
+          ]
+        }
+      ],
+      "evidenceLocators": [
+        {
+          "path": "spring-petclinic-customers-service/pom.xml",
+          "startLine": 97,
+          "endLine": 101,
+          "evidenceId": "8f892185be27547aaec33bab4cacc37a799b9df578c9251f722640fc4375ae1a",
+          "sourceSha": "a6159bf213d696832a6ed5521d7882ce1e82c359",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/a6159bf213d696832a6ed5521d7882ce1e82c359/spring-petclinic-customers-service/pom.xml#L97-L101"
+        },
+        {
+          "path": "spring-petclinic-vets-service/pom.xml",
+          "startLine": 117,
+          "endLine": 121,
+          "evidenceId": "1ff6246bec72cf2a6e2d1b33667cfa5d7751da0f410ff4fffc33f6c4a752c1f0",
+          "sourceSha": "a6159bf213d696832a6ed5521d7882ce1e82c359",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/a6159bf213d696832a6ed5521d7882ce1e82c359/spring-petclinic-vets-service/pom.xml#L117-L121"
+        },
+        {
+          "path": "spring-petclinic-visits-service/pom.xml",
+          "startLine": 96,
+          "endLine": 100,
+          "evidenceId": "50aad106c855fc30011228d2e791bc92062edcdb667b51bfabba5b0e372f131c",
+          "sourceSha": "a6159bf213d696832a6ed5521d7882ce1e82c359",
+          "sourceUrl": "https://github.com/spring-petclinic/spring-petclinic-microservices/blob/a6159bf213d696832a6ed5521d7882ce1e82c359/spring-petclinic-visits-service/pom.xml#L96-L100"
+        }
+      ],
+      "reusedBlobCount": 112
+    }
+  ],
+  "testSuites": [
+    {
+      "suite": "io.github.qingyicode.repopilot.agent.CapabilityProbeServiceTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.dependency.PomAnalyzerTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.indexing.SourceChunkerTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.repository.GitHubApiTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.LiveModelIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.ModelProtocolIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.RepositoryPersistenceIT",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.repository.RealRepositoryIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "io.github.qingyicode.repopilot.repository.RepositoryPipelineIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ]
+}

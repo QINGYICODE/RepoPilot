@@ -20,6 +20,6 @@ class LiveModelIT {
         var result = probe.verify();
         assertThat(result.modelCalls()).isEqualTo(2);
         assertThat(result.toolCalls()).isEqualTo(1);
-        assertThat(result.phase()).isEqualTo("D3");
+        assertThat(result.phase()).isEqualTo("D4");
     }
 }

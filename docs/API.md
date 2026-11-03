@@ -87,6 +87,34 @@ Java 按类型/方法和补充窗口切分；POM 按依赖、属性、管理声�
 
 历史证据的模块目录用于静态路径预筛选，不能单独作为历史服务归属的证明；模块移动等情况需结合实际 commit 和 diff 核对。
 
+## 依赖变更影响
+
+`GET /repositories/{repoId}/snapshots/{snapshotId}/dependency-graph` 返回快照的静态 Maven 图与未知项。
+
+`POST /repositories/{repoId}/dependency-impact`
+
+```json
+{
+  "baseSnapshotId": 1,
+  "headSnapshotId": 2,
+  "module": "spring-petclinic-api-gateway",
+  "maxDepth": 8
+}
+```
+
+示例中的快照 ID 需要替换为实际返回值。`module` 可省略，表示比较全部模块；`maxDepth` 范围为 1～12。
+
+结果包含：
+
+- `changes`：实际消费依赖的增删、版本、scope、optional 和 exclusions 变化。
+- `impacts`：服务、BASE/HEAD 视图、scope、路径及 evidenceIds。
+- `affectedServices`：已确认声明影响的服务集合。
+- `warnings`：未解析模型、BOM 变化、静态调用图缺失、深度/数量限制等。
+
+删除依赖从 BASE 图追踪，新增依赖从 HEAD 图追踪；修改分别查询两图，禁止跨版本拼接路径。测试、provided 和 optional 关系不会作为普通传递依赖扩散，排除声明会阻断相应路径。dependencyManagement 本身不等于实际使用。
+
+当前实现覆盖本地 parent、properties、版本管理和模块消费关系。外部 parent/BOM、profile、完整 Maven 传递版本仲裁、插件依赖及运行时 HTTP 调用不做完整解析，因此结果为声明层面的评审与回归范围，不能解释成“升级一定故障”或“其他服务完全不受影响”。
+
 ## 配置与验证
 
 | 环境变量 | 作用 |

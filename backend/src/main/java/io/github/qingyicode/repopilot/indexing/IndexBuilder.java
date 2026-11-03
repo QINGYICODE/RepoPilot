@@ -5,6 +5,7 @@ import io.github.qingyicode.repopilot.common.DomainException;
 import io.github.qingyicode.repopilot.common.Hashes;
 import io.github.qingyicode.repopilot.config.RepositorySettings;
 import io.github.qingyicode.repopilot.dependency.DependencyData.Source;
+import io.github.qingyicode.repopilot.dependency.PomAnalyzer;
 import io.github.qingyicode.repopilot.repository.RepositoryRecord;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,9 +34,10 @@ import org.springframework.stereotype.Component;
 public class IndexBuilder {
     private final RepositorySettings settings;
     private final SourceChunker chunker;
+    private final PomAnalyzer poms;
     private final IndexStore store;
-    public IndexBuilder(RepositorySettings settings, SourceChunker chunker, IndexStore store) {
-        this.settings = settings; this.chunker = chunker; this.store = store;
+    public IndexBuilder(RepositorySettings settings, SourceChunker chunker, PomAnalyzer poms, IndexStore store) {
+        this.settings = settings; this.chunker = chunker; this.poms = poms; this.store = store;
     }
     public IndexProduct build(RepositoryRecord record, String sha, Repository repository) {
         long began = System.nanoTime();
@@ -92,7 +94,15 @@ public class IndexBuilder {
                     evidence.put(item.id(), item);
                 }
             }
-            var graph = new io.github.qingyicode.repopilot.dependency.DependencyData.Graph(List.of(),List.of(),List.of("DEPENDENCY_GRAPH_NOT_BUILT"));
+            var graph = poms.analyze(text, source -> {
+                String body = text.get(source.path());
+                if (body == null) return source;
+                var item = EvidenceFactory.create(record.getId(), fullName, "FILE", sha, null, source.path(), "maven-declaration",
+                        module(source.path(), text.keySet()), source.startLine(), source.endLine(), Map.of(),
+                        EvidenceFactory.range(body, source.startLine(), source.endLine()), false);
+                evidence.put(item.id(), item);
+                return new Source(source.path(), source.startLine(), source.endLine(), item.id());
+            });
             warnings.addAll(graph.warnings());
             walk.reset(); walk.markStart(walk.parseCommit(ObjectId.fromString(sha)));
             for (RevCommit commit : walk) {

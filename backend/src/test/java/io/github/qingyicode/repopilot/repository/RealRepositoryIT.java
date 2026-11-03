@@ -3,6 +3,7 @@ package io.github.qingyicode.repopilot.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import io.github.qingyicode.repopilot.config.RepositorySettings;
 import io.github.qingyicode.repopilot.indexing.IndexStore;
+import io.github.qingyicode.repopilot.dependency.DependencyService;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ class RealRepositoryIT {
     @Autowired RepositoryStore repos;
     @Autowired IndexStore index;
     @Autowired RepositorySettings settings;
+    @Autowired DependencyService dependencies;
     @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @Test void importsActualPublicRepositoryAndExportsReviewMaterial() throws Exception {
@@ -37,6 +39,7 @@ class RealRepositoryIT {
         assertThat(job.status()).withFailMessage("Real import: %s",job.errorCode()).isEqualTo("READY");
         var snapshot=repos.snapshot(repo.getId(),job.snapshotId());
         assertThat(snapshot.coverage().get("historyComplete")).isEqualTo(true);
+        assertThat(index.graph(repo.getId(),snapshot.id()).modules()).hasSize(8+1);
         assertThat(index.file(repo.getId(),snapshot.id(),"pom.xml",1,40).content()).contains("spring-petclinic-customers-service");
         assertThat(index.search(repo.getId(),snapshot.id(),"zipkin",null,null,null,null,null,5,null).items()).isNotEmpty();
         var tracing=index.search(repo.getId(),snapshot.id(),"spring-boot-starter-zipkin","DIFF",null,null,
@@ -67,5 +70,38 @@ class RealRepositoryIT {
         }
         report.put("pomChangeCandidates",candidates);
         Files.writeString(java.nio.file.Path.of("target/upstream-review.json"),JsonMapper.builder().build().writerWithDefaultPrettyPrinter().writeValueAsString(report));
+        var json=JsonMapper.builder().build();
+        var cases=json.readTree(getClass().getResourceAsStream("/real-dependency-cases.json"));
+        var results=new ArrayList<Object>();
+        for(var item:cases) {
+            String base=item.path("baseSha").asString(); String head=item.path("headSha").asString();
+            long baseId=ready(repo.getId(),base).snapshotId();long headId=ready(repo.getId(),head).snapshotId();
+            var result=dependencies.compare(repo.getId(),baseId,headId,null,8);
+            var expected=new ArrayList<String>();item.path("expectedServices").forEach(s->expected.add(s.asString()));
+            assertThat(result.affectedServices()).containsExactlyElementsOf(expected);
+            assertThat(result.changes()).hasSize(item.path("expectedChanges").asInt());
+            var chosen=result.changes().stream().filter(c->c.coordinate().equals(item.path("coordinate").asString())).toList();
+            assertThat(chosen).isNotEmpty();
+            chosen.forEach(c->{
+                if(item.path("before").isNull())assertThat(c.before()).isNull();
+                else assertThat(c.before().version()).isEqualTo(item.path("before").asString());
+                assertThat(c.after().version()).isEqualTo(item.path("after").asString());
+            });
+            result.impacts().forEach(i->i.evidenceIds().forEach(id->{
+                var e=index.evidence(repo.getId(),i.view().equals("BASE")?baseId:headId,id);
+                assertThat(e.sourceSha()).isEqualTo(i.view().equals("BASE")?base:head);
+            }));
+            var checked=new LinkedHashMap<String,Object>();
+            checked.put("subject",item.path("subject").asString());checked.put("baseSha",base);checked.put("headSha",head);
+            checked.put("result",result);checked.put("headStats",repos.snapshot(repo.getId(),headId).stats());
+            results.add(checked);
+        }
+        report.put("verifiedDependencyCases",results);
+        Files.writeString(java.nio.file.Path.of("target/upstream-verified.json"),json.writerWithDefaultPrettyPrinter().writeValueAsString(report));
+    }
+    private RepositoryData.SyncJob ready(long repoId,String sha)throws Exception {
+        var job=sync.enqueue(repoId,sha);long deadline=System.nanoTime()+Duration.ofMinutes(5).toNanos();
+        while(!List.of("READY","FAILED").contains(job.status())&&System.nanoTime()<deadline){Thread.sleep(200);sync.dispatch();job=repos.job(job.id());}
+        assertThat(job.status()).withFailMessage("Import %s failed: %s",sha,job.errorCode()).isEqualTo("READY");return job;
     }
 }

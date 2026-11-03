@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.github.qingyicode.repopilot.common.DomainException;
 import io.github.qingyicode.repopilot.config.RepositorySettings;
 import io.github.qingyicode.repopilot.dependency.DependencyData;
+import io.github.qingyicode.repopilot.dependency.DependencyService;
 import io.github.qingyicode.repopilot.indexing.IndexProduct;
 import io.github.qingyicode.repopilot.indexing.IndexStore;
 import java.nio.file.Files;
@@ -40,6 +41,7 @@ class RepositoryPipelineIT {
     @Autowired SyncService sync;
     @Autowired RepositoryStore repos;
     @Autowired IndexStore indices;
+    @Autowired DependencyService dependencies;
     @Autowired JdbcTemplate jdbc;
     @org.springframework.boot.test.web.server.LocalServerPort int port;
     long repoId;
@@ -104,6 +106,9 @@ class RepositoryPipelineIT {
         assertThat(diffs.items()).isNotEmpty();
         assertThat(diffs.items()).allSatisfy(e->{assertThat(e.parentSha()).isEqualTo(base);assertThat(e.locator()).containsKeys("oldPath","oldStartLine","newStartLine");});
         assertThat(indices.search(repoId,headId,"连接失败",null,null,null,null,null,20,null).items()).isNotEmpty();
+        var impact=dependencies.compare(repoId,baseId,headId,null,8);
+        assertThat(impact.affectedServices()).containsExactly("api");
+        assertThat(impact.impacts()).allSatisfy(i->i.evidenceIds().forEach(id->assertThat(indices.evidence(repoId,i.view().equals("BASE")?baseId:headId,id)).isNotNull()));
     }
     @Test void paginationAndSnapshotIsolationAreEnforced() {
         var first=indices.search(repoId,headId,"fixture",null,null,null,null,null,1,null);
@@ -156,8 +161,9 @@ class RepositoryPipelineIT {
             var invalid=client.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(baseUrl+"/repositories/"+repoId+"/sync-jobs"))
                     .header("Content-Type","application/json").POST(java.net.http.HttpRequest.BodyPublishers.ofString("{\"commitSha\":\"main\"}")).build(),java.net.http.HttpResponse.BodyHandlers.ofString());
             assertThat(invalid.statusCode()).isEqualTo(400);assertThat(invalid.body()).contains("FULL_COMMIT_SHA_REQUIRED");
-            var searched=client.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(baseUrl+"/repositories/"+repoId+"/snapshots/"+headId+"/search?q=ALERT_PIPELINE")).GET().build(),java.net.http.HttpResponse.BodyHandlers.ofString());
-            assertThat(searched.statusCode()).isEqualTo(200);assertThat(searched.body()).contains("ALERT_PIPELINE");
+            var compared=client.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(baseUrl+"/repositories/"+repoId+"/dependency-impact"))
+                    .header("Content-Type","application/json").POST(java.net.http.HttpRequest.BodyPublishers.ofString("{\"baseSnapshotId\":"+baseId+",\"headSnapshotId\":"+headId+"}")).build(),java.net.http.HttpResponse.BodyHandlers.ofString());
+            assertThat(compared.statusCode()).isEqualTo(200);assertThat(compared.body()).contains("api","external:core","HEAD","BASE");
         }
     }
     @AfterAll void cleanup() { jdbc.update("DELETE FROM repository WHERE owner='fixture' AND name IN ('repo','other')"); }

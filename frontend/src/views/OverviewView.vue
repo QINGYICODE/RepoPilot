@@ -8,7 +8,7 @@ onMounted(() => { void system.refresh() })
 </script>
 
 <template>
-  <header class="page-header"><span class="eyebrow">WORKSPACE / OVERVIEW</span><span class="phase-tag">D1 · 技术基线</span></header>
+  <header class="page-header"><span class="eyebrow">WORKSPACE / OVERVIEW</span><span class="phase-tag">仓库证据 · 只读分析</span></header>
   <section class="hero">
     <p class="eyebrow">从代码证据，找到排查起点</p>
     <h1>让每一个结论，<br />都有据可查。</h1>
@@ -22,14 +22,14 @@ onMounted(() => { void system.refresh() })
     <div v-else-if="!system.capabilities" class="notice" role="status">正在读取实际服务状态…</div>
     <div v-else class="status-grid" aria-live="polite">
       <article class="status-card"><p>后端与数据库</p><strong><span class="dot"></span> 已连接</strong><small>最近检查 {{ system.checkedAt }}</small></article>
-      <article class="status-card"><p>已登记仓库</p><strong class="number">{{ system.capabilities.repositoryCount }} <span>个</span></strong><small>仓库同步计划在 D2 实施</small></article>
+      <article class="status-card"><p>已登记仓库</p><strong class="number">{{ system.capabilities.repositoryCount }} <span>个</span></strong><small>可在仓库分析页导入固定快照</small></article>
       <article class="status-card"><p>模型连接</p><strong>{{ system.capabilities.liveModelEnabled ? '已启用' : '未启用' }}</strong><small>{{ system.capabilities.liveModelEnabled ? '启用不代表真实调用已验证' : '可先完成基础服务验证' }}</small></article>
     </div>
   </section>
-  <section class="section-title roadmap-title"><h2>能力建设</h2><span>按业务闭环逐步交付</span></section>
+  <section class="section-title roadmap-title"><h2>分析场景</h2><span>每次分析绑定明确的仓库版本</span></section>
   <div class="feature-grid">
-    <article class="feature-card"><span class="feature-number">01 / CHANGE IMPACT</span><h3>依赖变更影响</h3><p>比较指定版本的依赖变化，追踪使用方与潜在调用影响，逐条展示依赖路径。</p><span class="planned-tag">计划中 · D4</span></article>
-    <article class="feature-card"><span class="feature-number">02 / FIX HISTORY</span><h3>历史修复检索</h3><p>从告警和异常定位相关提交，核对真实 diff，区分相似修复与确定关联。</p><span class="planned-tag">计划中 · D5</span></article>
+    <article class="feature-card"><span class="feature-number">01 / CHANGE IMPACT</span><h3>依赖变更影响</h3><p>比较固定快照中的 Maven 声明依赖，追踪反向使用方，逐条展示版本范围与证据路径。</p><RouterLink class="text-link" to="/repositories">进入仓库分析 ↗</RouterLink></article>
+    <article class="feature-card"><span class="feature-number">02 / CODE EVIDENCE</span><h3>代码与历史证据</h3><p>按异常、符号、路径或 SHA 检索代码、commit 和 diff，核对文件与新旧两侧行号。</p><RouterLink class="text-link" to="/repositories">检索仓库证据 ↗</RouterLink></article>
   </div>
-  <footer class="page-footer"><span>当前已交付：基础服务、数据库迁移与只读工具探针。</span><span v-if="system.capabilities">Spring Boot {{ system.capabilities.versions.springBoot }} · Spring AI {{ system.capabilities.versions.springAi }}</span></footer>
+  <footer class="page-footer"><span>声明依赖范围不等同于运行时影响；历史相似记录不等同于已确认修复。</span><span v-if="system.capabilities">Spring Boot {{ system.capabilities.versions.springBoot }} · Spring AI {{ system.capabilities.versions.springAi }}</span></footer>
 </template>
