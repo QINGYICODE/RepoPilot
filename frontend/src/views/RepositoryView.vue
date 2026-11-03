@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
+import AppIcon from '../components/AppIcon.vue'
+import { EXAMPLES, friendlyError, loadCommitLabels, shortSha, type CommitLabel } from '../lib/presentation'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { request, post, type Repository, type Snapshot, type SyncJob, type Evidence, type SearchPage, type ImpactResult } from '../api/repository'
 
+const tab = ref('versions')
+const labels = ref<Record<number, CommitLabel>>({})
 const repositories = ref<Repository[]>([])
 const selectedRepo = ref<number>()
 const snapshots = ref<Snapshot[]>([])
@@ -19,14 +24,13 @@ const page = ref<SearchPage | null>(null)
 const evidence = ref<Evidence | null>(null)
 const result = ref<ImpactResult | null>(null)
 const modulePath = ref('')
-const selectedSnapshot = computed(() => snapshots.value.find(s => s.id === snapshotId.value))
 let timer: ReturnType<typeof setTimeout> | undefined
 let disposed = false
 
 async function run(action: () => Promise<void>) {
   if (busy.value) return
   busy.value = true; error.value = ''
-  try { await action() } catch (cause) { error.value = cause instanceof Error ? cause.message : '操作失败，请重试' }
+  try { await action() } catch (cause) { error.value = friendlyError(cause) }
   finally { busy.value = false }
 }
 async function loadSnapshots() {
@@ -34,7 +38,9 @@ async function loadSnapshots() {
   if (!selectedRepo.value) { snapshots.value = []; return }
   const repo = repositories.value.find(r => r.id === selectedRepo.value)
   snapshots.value = await request<Snapshot[]>(`/repositories/${selectedRepo.value}/snapshots`)
-  snapshotId.value = repo?.activeSnapshotId ?? snapshots.value[0]?.id
+  snapshotId.value = snapshots.value.find(s => s.id === repo?.activeSnapshotId)?.id ?? snapshots.value[0]?.id
+  const ownerId = selectedRepo.value
+  void loadCommitLabels(ownerId, snapshots.value).then(data => { if (selectedRepo.value === ownerId) labels.value = data })
   headId.value = snapshotId.value
   baseId.value = snapshots.value.find(s => s.id !== headId.value)?.id ?? snapshotId.value
 }
@@ -45,7 +51,7 @@ async function loadRepositories() {
 }
 async function register() {
   await run(async () => {
-    const parts = fullName.value.trim().split('/')
+    const parts = fullName.value.trim().replace(/^https:\/\/github\.com\//i, '').replace(/\.git\/?$/, '').replace(/\/$/, '').split('/')
     if (parts.length !== 2) throw new Error('请输入 owner/repository 格式的仓库名称')
     const repo = await post<Repository>('/repositories', { owner: parts[0], name: parts[1] })
     selectedRepo.value = repo.id; await loadRepositories()
@@ -97,30 +103,20 @@ onUnmounted(() => { disposed = true; if (timer) clearTimeout(timer) })
 </script>
 
 <template>
-  <header class="page-header"><span class="eyebrow">WORKSPACE / REPOSITORY</span><span class="phase-tag">固定版本 · 可追溯证据</span></header>
-  <h1 class="repo-title">仓库分析</h1>
-  <p class="hero-description">登记允许访问的仓库，导入指定提交，在固定快照中检索证据、比较依赖变化。</p>
-  <div v-if="error" class="notice error" role="alert">{{ error }}</div>
-  <section class="repo-panel">
-    <h2>仓库与快照</h2>
-    <form class="repo-form" @submit.prevent="register"><label>GitHub 仓库<input v-model="fullName" required aria-label="GitHub 仓库" /></label><button :disabled="busy">登记仓库</button></form>
-    <div class="repo-form"><label>已登记仓库<select v-model="selectedRepo" @change="run(loadSnapshots)"><option v-for="repo in repositories" :key="repo.id" :value="repo.id">{{ repo.owner }}/{{ repo.name }}</option></select></label><button :disabled="busy" @click="run(loadRepositories)">刷新</button></div>
-    <form class="repo-form" @submit.prevent="synchronize"><label>完整 commit SHA<input v-model="commitSha" required minlength="40" maxlength="40" /></label><button :disabled="busy || !selectedRepo">同步并建立索引</button></form>
-    <p v-if="job" role="status" class="repo-note">同步状态：{{ job.status }} · {{ job.targetSha.slice(0, 12) }}</p>
-    <label class="repo-select">检索快照<select v-model="snapshotId" @change="page = null; evidence = null"><option v-for="s in snapshots" :key="s.id" :value="s.id">{{ s.commitSha.slice(0, 12) }} · {{ s.stats.fileCount }} 个文件 · {{ s.stats.commitCount }} 个提交</option></select></label>
-    <details v-if="selectedSnapshot" class="repo-note"><summary>索引覆盖范围：{{ selectedSnapshot.coverage.level }}；历史{{ selectedSnapshot.coverage.historyComplete ? '已完整遍历' : '覆盖不完整' }}</summary><ul><li v-for="warning in selectedSnapshot.coverage.warnings" :key="warning">{{ warning }}</li></ul></details>
-  </section>
-  <section class="repo-panel">
-    <h2>代码与历史证据检索</h2>
-    <form class="repo-form" @submit.prevent="search()"><label>异常、符号、路径或 SHA<input v-model="query" required maxlength="200" /></label><select v-model="sourceType" aria-label="证据类型"><option value="">全部证据</option><option value="FILE">当前代码</option><option value="COMMIT">提交记录</option><option value="DIFF">历史 diff</option></select><button :disabled="busy || !snapshotId">检索</button></form>
-    <p v-if="page" class="repo-note">本页 {{ page.items.length }} 条 · {{ page.retrievalMethod }}<span v-if="!page.items.length"> · 当前查询范围内没有命中</span></p>
-    <article v-for="item in page?.items" :key="item.id" class="evidence-card"><div><span class="phase-tag">{{ item.type }}</span> <a :href="item.sourceUrl" target="_blank" rel="noreferrer">{{ item.path || item.sourceSha.slice(0, 12) }} ↗</a></div><p class="repo-note">{{ item.symbol }} · {{ item.sourceSha.slice(0, 12) }} · 行 {{ item.startLine }}–{{ item.endLine }}<span v-if="item.truncated"> · 片段已截断</span></p><pre>{{ item.excerpt }}</pre><details v-if="item.type === 'DIFF'"><summary>diff 两侧定位</summary><pre>{{ JSON.stringify(item.locator, null, 2) }}</pre></details></article>
-    <button v-if="page?.nextCursor" :disabled="busy" @click="search(page.nextCursor)">下一页</button>
-  </section>
-  <section class="repo-panel">
-    <h2>依赖变更影响</h2><p class="repo-note">分析 Maven 声明依赖及其反向使用方；测试、provided、optional 范围单独标记。结果不代表运行时故障判定。</p>
-    <form class="repo-form" @submit.prevent="compare"><label>Base<select v-model="baseId"><option v-for="s in snapshots" :key="s.id" :value="s.id">{{ s.commitSha.slice(0, 12) }}</option></select></label><label>Head<select v-model="headId"><option v-for="s in snapshots" :key="s.id" :value="s.id">{{ s.commitSha.slice(0, 12) }}</option></select></label><label>模块路径（可选）<input v-model="modulePath" placeholder="留空分析全部模块" /></label><button :disabled="busy || !baseId || !headId">比较依赖</button></form>
-    <template v-if="result"><p>声明影响涉及的服务：{{ result.affectedServices.join('、') || '未发现已确认的声明影响' }}</p><div class="table-scroll"><table><thead><tr><th>模块</th><th>依赖</th><th>变化</th><th>Base</th><th>Head</th></tr></thead><tbody><tr v-for="change in result.changes" :key="change.id"><td>{{ change.module }}</td><td>{{ change.coordinate }}</td><td>{{ change.kind }}</td><td>{{ change.before?.version || '—' }}</td><td>{{ change.after?.version || '—' }}</td></tr></tbody></table></div><article v-for="(item, i) in result.impacts" :key="i" class="evidence-card"><strong>{{ item.service }}</strong><p>{{ item.path.join(' → ') }}</p><p class="repo-note">{{ item.view }} · {{ item.scope }} · {{ item.kind }}</p><button v-for="(id, n) in item.evidenceIds" :key="id" :disabled="busy" @click="showEvidence(id, item.view)">依据 {{ n + 1 }}</button></article><details><summary>分析限制与未知项（{{ result.warnings.length }}）</summary><ul><li v-for="warning in result.warnings" :key="warning">{{ warning }}</li></ul></details><p v-if="result.truncated" role="status">路径结果已达到数量或深度限制。</p></template>
-    <article v-if="evidence" class="evidence-card"><h3>已核验证据</h3><a :href="evidence.sourceUrl" target="_blank" rel="noreferrer">{{ evidence.path }} · {{ evidence.sourceSha.slice(0, 12) }} · 行 {{ evidence.startLine }}–{{ evidence.endLine }} ↗</a><pre>{{ evidence.excerpt }}</pre></article>
-  </section>
+  <header class="page-heading"><div><h1>仓库管理</h1><p>连接 GitHub 仓库，导入需要分析的代码版本。</p></div><RouterLink class="button secondary" to="/">返回分析<AppIcon name="arrow" :size="15" /></RouterLink></header>
+  <div v-if="error" class="inline-error" role="alert"><AppIcon name="warning" /><span>{{ error }}</span></div>
+  <div class="page-tabs" role="tablist" aria-label="仓库工具"><button role="tab" :aria-selected="tab === 'versions'" @click="tab = 'versions'">仓库与版本</button><button role="tab" :aria-selected="tab === 'search'" @click="tab = 'search'">代码检索</button><button role="tab" :aria-selected="tab === 'compare'" @click="tab = 'compare'">手动依赖比较</button></div>
+  <template v-if="tab === 'versions'">
+    <section v-if="!repositories.length" class="section-block"><h2>接入第一个仓库</h2><p>请输入 GitHub 地址或 owner/repository。服务端只接受允许范围内的仓库。</p><form class="inline-form" @submit.prevent="register"><label class="field"><span>GitHub 仓库地址</span><input v-model="fullName" required placeholder="https://github.com/owner/repository" /></label><button class="button primary" :disabled="busy">{{ busy ? '正在连接' : '接入仓库' }}</button></form></section>
+    <template v-else>
+      <div class="repo-summary"><AppIcon name="folder" :size="22" /><div><h2>已连接的仓库</h2><span class="muted">仓库代码与历史均为只读访问</span></div></div>
+      <div class="inline-form"><label class="field"><span>选择仓库</span><select v-model="selectedRepo" aria-label="选择仓库" :disabled="busy" @change="run(loadSnapshots)"><option v-for="repo in repositories" :key="repo.id" :value="repo.id">{{ repo.owner }}/{{ repo.name }}</option></select></label><button class="button secondary" :disabled="busy" @click="run(loadRepositories)"><AppIcon name="refresh" :size="15" />刷新</button></div>
+      <details class="disclosure"><summary>接入其他仓库</summary><form class="inline-form" @submit.prevent="register"><label class="field"><span>GitHub 仓库地址</span><input v-model="fullName" required /></label><button class="button secondary" :disabled="busy">接入仓库</button></form><p class="field-help">仓库需在服务端允许列表中。访问未授权仓库会被拒绝。</p></details>
+      <section class="split-settings"><div><h2>导入代码版本</h2><p>分析固定提交的代码与可达历史。依赖比较需要导入变更前、变更后两个版本。</p><details class="disclosure"><summary>从哪里获取 SHA？</summary><p>在 GitHub 仓库的提交记录中打开目标提交，复制完整 SHA。</p><a v-if="repositories.find(r => r.id === selectedRepo)" class="text-link" :href="`https://github.com/${repositories.find(r => r.id === selectedRepo)?.owner}/${repositories.find(r => r.id === selectedRepo)?.name}/commits`" target="_blank" rel="noopener noreferrer">打开 GitHub 提交历史<AppIcon name="external" :size="14" /></a></details></div><div><form class="setting-fields" @submit.prevent="synchronize"><label class="field"><span>完整提交 SHA</span><input v-model="commitSha" required pattern="[a-fA-F0-9]{40}" maxlength="40" aria-describedby="sha-help" placeholder="粘贴 40 位提交 SHA" /><small id="sha-help">例如 {{ EXAMPLES.INCIDENT_FIX.head.slice(0, 12) }}…；完整 SHA 为 40 位。</small></label><div><button class="button primary" :disabled="busy || !selectedRepo || (!!job && !['READY','FAILED'].includes(job.status))"><AppIcon name="plus" :size="15" />导入版本</button></div></form><p v-if="job" role="status" class="inline-success"><AppIcon :name="job.status === 'READY' ? 'check' : 'activity'" :size="16" />{{ ({ QUEUED: '等待同步', FETCHING: '正在获取提交', INDEXING: '正在建立代码索引', READY: '版本已就绪，可以开始分析', FAILED: '导入失败，请重试' } as Record<string,string>)[job.status] ?? job.status }} · {{ shortSha(job.targetSha) }}</p></div></section>
+      <details class="disclosure"><summary>导入真实仓库示例所需版本</summary><p class="field-help">示例使用 Spring PetClinic 仓库。点击填入 SHA，再使用上面的“导入版本”。已有版本会直接复用。</p><div v-for="example in [{ title: 'Admin 升级前', sha: EXAMPLES.DEPENDENCY_IMPACT.base }, { title: 'Admin 升级后', sha: EXAMPLES.DEPENDENCY_IMPACT.head }, { title: 'Zipkin 历史修复知识版本', sha: EXAMPLES.INCIDENT_FIX.head }]" :key="example.sha" class="version-row"><div><strong>{{ example.title }}</strong><code>{{ shortSha(example.sha) }}</code></div><button class="button secondary" @click="commitSha = example.sha">填入 SHA</button></div></details>
+      <section class="section-block" style="margin-top: 32px"><div class="section-header"><h2>可分析的代码版本</h2><span class="muted">{{ snapshots.length }} 个版本</span></div><p v-if="!snapshots.length">还没有就绪版本。先导入一个提交，再返回分析工作台。</p><div class="version-list"><article v-for="snapshot in snapshots" :key="snapshot.id" class="version-row"><AppIcon name="branch" /><div><strong>{{ labels[snapshot.id]?.subject || '代码版本' }}</strong><p><code>{{ shortSha(snapshot.commitSha) }}</code> · {{ snapshot.stats.fileCount ?? 0 }} 个文件 · {{ snapshot.stats.commitCount ?? 0 }} 个历史提交</p></div><RouterLink class="button secondary" :to="{ path: '/', query: { repo: selectedRepo, snapshot: snapshot.id } }">使用此版本<AppIcon name="arrow" :size="14" /></RouterLink></article></div></section>
+    </template>
+  </template>
+  <section v-else-if="tab === 'search'" class="section-block"><h2>检索代码与历史记录</h2><p>用于手动核对证据。想直接获得分析结论，请返回分析工作台。</p><label class="field"><span>查阅的代码版本</span><select v-model="snapshotId" @change="page = null; evidence = null"><option v-for="s in snapshots" :key="s.id" :value="s.id">{{ shortSha(s.commitSha) }} · {{ labels[s.id]?.subject || '代码版本' }}</option></select></label><form class="inline-form" @submit.prevent="search()"><label class="field"><span>异常、符号、路径或提交 SHA</span><input v-model="query" required maxlength="200" /></label><label class="field"><span>证据类型</span><select v-model="sourceType"><option value="">全部证据</option><option value="FILE">当前代码</option><option value="COMMIT">提交记录</option><option value="DIFF">历史修改</option></select></label><button class="button primary" :disabled="busy || !snapshotId"><AppIcon name="search" :size="15" />检索</button></form><p v-if="page" class="field-help">本页 {{ page.items.length }} 条{{ !page.items.length ? '，当前版本内未找到匹配内容，可尝试更具体的异常或配置键。' : '' }}</p><article v-for="item in page?.items" :key="item.id" class="evidence-search-row"><header><strong>{{ item.path || shortSha(item.sourceSha) }}</strong><a class="text-link" :href="item.sourceUrl" target="_blank" rel="noopener noreferrer">GitHub 原文<AppIcon name="external" :size="14" /></a></header><p class="muted">{{ item.symbol }} · {{ shortSha(item.sourceSha) }} · 第 {{ item.startLine }}–{{ item.endLine }} 行{{ item.truncated ? ' · 片段已截断' : '' }}</p><pre class="source-code">{{ item.excerpt }}</pre><details v-if="item.type === 'DIFF'" class="technical-warnings"><summary>新旧两侧定位</summary><pre>{{ JSON.stringify(item.locator, null, 2) }}</pre></details></article><button v-if="page?.nextCursor" class="button secondary" :disabled="busy" @click="search(page.nextCursor)">下一页</button></section>
+  <section v-else class="section-block"><h2>手动比较声明依赖</h2><p>不经过模型，直接核对两个版本中的 Maven 依赖和服务使用路径。</p><form class="setting-fields" @submit.prevent="compare"><div class="field-grid"><label class="field"><span>变更前版本</span><select v-model="baseId"><option v-for="s in snapshots" :key="s.id" :value="s.id">{{ shortSha(s.commitSha) }} · {{ labels[s.id]?.subject }}</option></select></label><label class="field"><span>变更后版本</span><select v-model="headId"><option v-for="s in snapshots" :key="s.id" :value="s.id">{{ shortSha(s.commitSha) }} · {{ labels[s.id]?.subject }}</option></select></label></div><label class="field"><span>模块路径 <span class="optional">可选</span></span><input v-model="modulePath" placeholder="留空比较整个仓库" /></label><div><button class="button primary" :disabled="busy || !baseId || !headId">比较依赖<AppIcon name="arrow" :size="15" /></button></div></form><template v-if="result"><h3 class="answer-title">{{ result.affectedServices.length }} 个服务存在声明依赖影响</h3><p>{{ result.affectedServices.join('、') || '未识别到明确影响，不代表没有其他影响。' }}</p><div v-for="change in result.changes" :key="change.id" class="version-row"><div><strong>{{ change.coordinate }}</strong><p>{{ change.module }}</p></div><code>{{ change.before?.version ?? '未声明' }} → {{ change.after?.version ?? '已移除' }}</code></div><details class="disclosure"><summary>传播路径与依据</summary><article v-for="(impact, i) in result.impacts" :key="i" class="path-row"><p>{{ impact.path.join(' → ') }}</p><button v-for="(id, n) in impact.evidenceIds" :key="id" class="text-button" :disabled="busy" @click="showEvidence(id, impact.view)">核对依据 {{ n + 1 }}</button></article></details><details class="disclosure"><summary>范围限制与未核验项（{{ result.warnings.length }}）</summary><ul class="plain-list"><li v-for="warning in result.warnings" :key="warning"><code>{{ warning }}</code></li></ul></details></template><article v-if="evidence" class="evidence-search-row"><h3>已核验证据</h3><a class="text-link" :href="evidence.sourceUrl" target="_blank" rel="noopener noreferrer">{{ evidence.path }} · {{ shortSha(evidence.sourceSha) }}<AppIcon name="external" :size="14" /></a><pre class="source-code">{{ evidence.excerpt }}</pre></article></section>
 </template>

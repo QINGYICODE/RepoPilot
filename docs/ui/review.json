@@ -1,0 +1,108 @@
+{
+  "sources": {
+    "taste-skill": "Leonxlnx/taste-skill@12af471",
+    "impeccable": "pbakaus/impeccable@9fadc41"
+  },
+  "direction": {
+    "name": "framed-sheet",
+    "seed": 1530780598,
+    "redraws": 0
+  },
+  "impeccable": {
+    "engine": "0.1.18",
+    "probe": "impeccable-engine 0.1.18",
+    "contextExitCode": 0,
+    "detectorFindings": []
+  },
+  "viewports": [
+    1440,
+    768,
+    390
+  ],
+  "tasteBeforeFindings": [
+    {
+      "level": "WARN",
+      "id": "micro-label",
+      "width": 1440,
+      "message": "1 tiny uppercase letter-spaced label(s): \"REPOPILOT / AGENT\"",
+      "fix": "Prefer sentence case at body size.",
+      "alsoAt": [
+        768,
+        390
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "contrast",
+      "width": 1440,
+      "message": "Low-contrast text: \"REPOPILOT / AGENT\" 3.5:1 needs 4.5:1; \"仓库限定 · 只读工具 · 证据核验\" 3.5:1 needs 4.5:1; \"分析依赖变更的服务影响，或从告警定位历史修复线索。超出范围、权限不足或没有证据时\" 3.6:1 needs 4.5:1",
+      "fix": "Darken or lighten the text colour.",
+      "alsoAt": [
+        768,
+        390
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "dev-server",
+      "width": 1440,
+      "message": "This page is served by a development server (Vite, webpack or Next in dev mode).",
+      "fix": "Run the last gate on the production build too (vite build && vite preview, next build && next start, or the built index.html): minifiers and bundlers change the CSS a visitor receives.",
+      "alsoAt": [
+        768,
+        390
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "font-not-dealt",
+      "width": 1440,
+      "message": "The sheet dealt IBM Plex Sans, but the page renders Noto Sans SC.",
+      "fix": "Load the dealt face (the link on the sheet) and put it first in font-family. A build that falls back to a default face lands on the default look."
+    },
+    {
+      "level": "FAIL",
+      "id": "tiny-text",
+      "width": 1440,
+      "message": "3 text blocks under 11px: 基于仓库证据的运维分析 10px, REPOPILOT / AGENT 10px, 仓库限定 · 只读工具 · 证据核验 10px.",
+      "fix": "Nothing below 11px; secondary text 12px, data 13–14px.",
+      "alsoAt": [
+        768,
+        390
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "app-title-size",
+      "width": 1440,
+      "message": "The h1 is 49px (\"从一个问题，\n追到代码证据。\").",
+      "fix": "An app screen is not a landing page: the title is 18-32px (20-24px on a phone).",
+      "alsoAt": [
+        390
+      ]
+    }
+  ],
+  "tasteAfterFindings": [],
+  "browserVerification": {
+    "realApi": true,
+    "realModel": true,
+    "scenarios": [
+      "dependency analysis",
+      "historical fix candidates",
+      "evidence drawer, clipboard and Escape",
+      "refresh and recent-task switching",
+      "scope adjustment",
+      "no-evidence, out-of-scope and unauthorized refusal",
+      "cancellation",
+      "repository versions, code search and direct dependency comparison",
+      "guide examples",
+      "mobile navigation and quick example",
+      "empty repository and network error"
+    ],
+    "consoleErrors": 0
+  },
+  "limitations": [
+    "Automated checks are not a user study.",
+    "Model tool failure rate improvement from 18% to 4% is not established."
+  ]
+}
