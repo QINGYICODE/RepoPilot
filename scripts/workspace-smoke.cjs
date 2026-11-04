@@ -46,6 +46,10 @@ async function main() {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(`${base}/?run=${created.id}`)
     await page.waitForFunction(() => document.querySelector('input[aria-label="查找历史修复"]')?.checked)
+    await page.waitForFunction(() => {
+      const submit = document.querySelector('.composer button[type="submit"]')
+      return submit && !submit.disabled
+    })
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     await page.screenshot({ path: path.resolve(__dirname, '../.local/workspace-restored-mobile.png'), fullPage: true })
     assert.deepEqual(errors, [])
