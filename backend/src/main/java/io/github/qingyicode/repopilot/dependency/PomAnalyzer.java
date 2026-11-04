@@ -34,8 +34,16 @@ public class PomAnalyzer {
     public Graph analyze(Map<String, String> files, Function<Source, Source> prove) {
         var warnings = new LinkedHashSet<String>();
         var poms = new LinkedHashMap<String, PomXml.Node>();
-        discover("pom.xml", files, poms, warnings, new HashSet<>());
-        if (poms.isEmpty()) return new Graph(List.of(), List.of(), List.of("NO_MAVEN_ROOT"));
+        if (files.containsKey("pom.xml")) discover("pom.xml", files, poms, warnings, new HashSet<>());
+        else {
+            var visited = new HashSet<String>();
+            // Mixed frontend/backend repositories may have no root Maven aggregator.
+            files.keySet().stream().filter(path -> path.endsWith("/pom.xml"))
+                    .sorted(java.util.Comparator.comparingInt((String path) -> path.split("/").length).thenComparing(Function.identity()))
+                    .forEach(path -> discover(path, files, poms, warnings, visited));
+            if (!poms.isEmpty()) warnings.add("MAVEN_ROOTS_DISCOVERED_FROM_SUBDIRECTORIES");
+        }
+        if (poms.isEmpty()) { warnings.add("NO_MAVEN_ROOT"); return new Graph(List.of(), List.of(), List.copyOf(warnings)); }
         var models = new LinkedHashMap<String, Effective>();
         for (String path : poms.keySet()) resolve(path, poms, files, models, new HashSet<>(), warnings);
         var modules = new ArrayList<Module>();

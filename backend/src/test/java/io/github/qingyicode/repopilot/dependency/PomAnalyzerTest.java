@@ -45,6 +45,25 @@ class PomAnalyzerTest {
         assertThat(after.modules().stream().filter(m->m.path().equals("lib")).findFirst().orElseThrow().dependencies().getFirst().sources())
                 .anySatisfy(s -> assertThat(s.path()).isEqualTo("pom.xml"));
     }
+    @Test void discoversBackendReactorWithoutRepositoryRootPomAndPreservesItsModulePaths() {
+        var before = new LinkedHashMap<String,String>(); var after = new LinkedHashMap<String,String>();
+        files("1").forEach((path, body) -> before.put("backend/" + path, body));
+        files("2").forEach((path, body) -> after.put("backend/" + path, body));
+        after.put("frontend/package.json", "{}");
+        var parsed = graph(after);
+        assertThat(parsed.modules()).extracting(DependencyData.Module::path)
+                .containsExactlyInAnyOrder("backend", "backend/lib", "backend/api", "backend/batch");
+        assertThat(parsed.warnings()).contains("MAVEN_ROOTS_DISCOVERED_FROM_SUBDIRECTORIES");
+        assertThat(impact.compare(1,graph(before),2,parsed,"backend/lib",8).affectedServices())
+                .containsExactly("backend/api","backend/batch");
+    }
+    @Test void emptyOrUnsafePomDoesNotBecomeASuccessfulModuleDiscovery() {
+        assertThat(graph(Map.of("frontend/package.json", "{}")).warnings()).containsExactly("NO_MAVEN_ROOT");
+        var parsed=graph(Map.of("backend/pom.xml","<!DOCTYPE project SYSTEM 'file:///etc/passwd'><project/>"));
+        assertThat(parsed.modules()).isEmpty();
+        var root=graph(Map.of("pom.xml","broken", "backend/pom.xml","<project><artifactId>backend</artifactId></project>"));
+        assertThat(root.modules()).isEmpty();
+    }
     @Test void deletedDependenciesAreTracedThroughBaseOnly() {
         var newer = files("1"); newer.put("lib/pom.xml",child("lib",""));
         var result = impact.compare(1,graph(files("1")),2,graph(newer),null,8);

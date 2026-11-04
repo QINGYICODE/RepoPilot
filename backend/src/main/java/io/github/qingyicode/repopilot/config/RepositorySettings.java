@@ -17,7 +17,7 @@ public record RepositorySettings(
         @DefaultValue("180") int jobLeaseSeconds,
         @DefaultValue("true") boolean backgroundSyncEnabled,
         @DefaultValue("") String networkProxy) {
-    public static final String INDEX_VERSION = "v2.2";
+    public static final String INDEX_VERSION = "v2.3";
     public static final String PROFILE_HASH = io.github.qingyicode.repopilot.common.Hashes.sha256("default-profile:no-external-resolution");
     public String profileHash() {
         return io.github.qingyicode.repopilot.common.Hashes.sha256(PROFILE_HASH + "|" + maxFiles + "|" + maxFileBytes + "|" + maxHistoryCommits + "|" + maxEvidence);

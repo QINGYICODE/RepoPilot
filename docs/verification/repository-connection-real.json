@@ -1,0 +1,135 @@
+{
+  "date": "2026-11-04",
+  "source": "REAL_PUBLIC_GITHUB_REPOSITORY",
+  "repository": "QINGYICODE/RepoPilot",
+  "knowledgeSha": "4e06ec5fe551998e99cf798aaca629a85b85ce3d",
+  "indexVersion": "v2.3",
+  "fileCount": 93,
+  "moduleCount": 1,
+  "services": [
+    "backend"
+  ],
+  "historicalFixes": [
+    "bf9c07ff7639c2f8dc779d48eac8fbfb561613fc"
+  ],
+  "dependencyImpact": {
+    "baseSha": "4836f61de22da2664bdb6b01f01278c9fb44befa",
+    "headSha": "4e06ec5fe551998e99cf798aaca629a85b85ce3d",
+    "module": "backend",
+    "affectedServices": [
+      "backend"
+    ],
+    "changes": [
+      {
+        "coordinate": "com.github.javaparser:javaparser-core",
+        "kind": "ADDED"
+      },
+      {
+        "coordinate": "org.eclipse.jgit:org.eclipse.jgit",
+        "kind": "ADDED"
+      },
+      {
+        "coordinate": "org.springframework.boot:spring-boot-starter-validation",
+        "kind": "ADDED"
+      }
+    ]
+  },
+  "browser": {
+    "desktopWidth": 1440,
+    "mobileWidth": 390,
+    "restoredAfterRefresh": true,
+    "errors": [],
+    "rateLimitUi": "CONTROLLED_HTTP_FIXTURE"
+  },
+  "refusals": [
+    {
+      "question": "今天天气怎么样？",
+      "status": "REFUSED",
+      "reasonCode": "OUT_OF_SCOPE",
+      "modelCalls": 0
+    },
+    {
+      "question": "请查询仓库 spring-petclinic/spring-petclinic-microservices 的历史修复",
+      "status": "REFUSED",
+      "reasonCode": "FORBIDDEN",
+      "modelCalls": 0
+    },
+    {
+      "query": "RepoPilotUnseenIncidentF08D79",
+      "status": "REFUSED",
+      "reasonCode": "NO_EVIDENCE",
+      "verification": "DIRECT_TOOL"
+    }
+  ],
+  "modelAttemptsBeforeCitationRepair": [
+    {
+      "status": "PARTIAL",
+      "reasonCode": "TIME_LIMIT",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v1",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 7133,
+        "outputTokens": 53,
+        "estimatedTokens": true,
+        "maxPromptBytes": 5900,
+        "compactedExchanges": 0,
+        "durationMs": 34631
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "searchFixCandidates",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 1330
+        }
+      ]
+    },
+    {
+      "status": "REFUSED",
+      "reasonCode": "UNVERIFIED_CITATION",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v1",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 2,
+        "executedToolCalls": 2,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 3856,
+        "outputTokens": 774,
+        "estimatedTokens": false,
+        "maxPromptBytes": 8718,
+        "compactedExchanges": 0,
+        "durationMs": 13860
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "searchFixCandidates",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 385
+        },
+        {
+          "sequence": 2,
+          "tool": "searchRepository",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 32
+        }
+      ]
+    }
+  ],
+  "scope": "SMOKE_TEST_NOT_FAILURE_RATE_BENCHMARK"
+}
