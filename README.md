@@ -52,6 +52,8 @@ RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变�
 
 ### 启动服务
 
+可先运行 `python3 scripts/dev.py doctor` 检查本机 JDK、前端依赖和 MySQL 端口；不会输出密钥或请求模型。完整操作见 [本机运行与验收](docs/本机运行与验收.md)。
+
 在 `.env` 配置 `LLM_BASE_URL`、`LLM_MODEL`、`LLM_API_KEY` 后，在项目根目录启动 Agent 后端：
 
 ```bash
@@ -83,6 +85,8 @@ npm run dev
 没有接入仓库或导入示例版本时，先前往仓库管理。完整操作与前后对比见 [前端重构记录](docs/前端重构记录.md)。
 
 ### 模型与业务验证
+
+`python3 scripts/dev.py check` 一次完成本机数据库集成、后端测试、Python 工具回归、前端测试与构建。固定 50 条用例支持无模型工具回归和真实 Agent 评测，来源与指标口径见 [评测说明](eval/README.md)。
 
 `LLM_BASE_URL` 使用供应商的完整兼容 API 前缀，例如 `https://api.openai.com/v1`。模型密钥仅由后端读取；`.env` 不纳入版本控制。
 

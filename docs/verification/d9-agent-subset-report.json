@@ -1,0 +1,270 @@
+{
+  "generatedAt": "2026-11-04T06:23:10.323956+00:00",
+  "mode": "agent",
+  "split": "all",
+  "manifestHash": "ace91b242fe076701a6b8cc07999e40ff95414a640f46b10c3900869e4d7f5f2",
+  "indexVersion": "v2.3",
+  "annotation": "AGENT_REVIEWED_EXPECTATIONS_NOT_HUMAN_INCIDENT_LABELS",
+  "selectedCases": 8,
+  "completedCases": 8,
+  "commit": "0d67456dbd41d0a15a47bb163a37d4e9550dc3a0",
+  "workingTreeDirty": true,
+  "scope": "REGRESSION_NOT_HISTORICAL_18_TO_4_BASELINE",
+  "summary": {
+    "counts": {
+      "PASS": 8
+    },
+    "casePass": {
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1.0
+    },
+    "businessCasePass": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1.0
+    },
+    "refusalCasePass": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1.0
+    },
+    "uniqueEvidenceValidity": {
+      "numerator": 17,
+      "denominator": 17,
+      "rate": 1.0
+    },
+    "agentToolExecutionFailure": {
+      "numerator": 0,
+      "denominator": 6,
+      "rate": 0.0
+    },
+    "agentToolRejection": {
+      "numerator": 0,
+      "denominator": 6,
+      "rate": 0.0
+    },
+    "modelCalls": 10,
+    "inputTokens": 13723,
+    "outputTokens": 1926,
+    "hasEstimatedTokens": false,
+    "latencyMs": {
+      "p50": 6093,
+      "p95": 13185
+    }
+  },
+  "cases": [
+    {
+      "id": "RP-002",
+      "kind": "DEPENDENCY",
+      "split": "tune",
+      "group": "dep-1",
+      "status": "PASS",
+      "runId": "8e13722d-2296-4c18-866c-b320e2b71134",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 2607,
+        "outputTokens": 457,
+        "estimatedTokens": false,
+        "maxPromptBytes": 6120,
+        "compactedExchanges": 0,
+        "durationMs": 9336
+      },
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "businessEvidenceVerified": true,
+      "durationMs": 10196
+    },
+    {
+      "id": "RP-012",
+      "kind": "DEPENDENCY",
+      "split": "holdout",
+      "group": "dep-6",
+      "status": "PASS",
+      "runId": "3ee89694-c39c-40e5-aac2-a742e5da1d3f",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 3333,
+        "outputTokens": 601,
+        "estimatedTokens": false,
+        "maxPromptBytes": 7356,
+        "compactedExchanges": 0,
+        "durationMs": 12216
+      },
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "businessEvidenceVerified": true,
+      "durationMs": 13185
+    },
+    {
+      "id": "RP-014",
+      "kind": "FIX",
+      "split": "tune",
+      "group": "fix-1",
+      "status": "PASS",
+      "runId": "5dcc00a4-f80a-41aa-b133-660dfa30e823",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 2766,
+        "outputTokens": 489,
+        "estimatedTokens": false,
+        "maxPromptBytes": 5997,
+        "compactedExchanges": 0,
+        "durationMs": 11213
+      },
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "businessEvidenceVerified": true,
+      "durationMs": 12137
+    },
+    {
+      "id": "RP-024",
+      "kind": "FIX",
+      "split": "holdout",
+      "group": "fix-6",
+      "status": "PASS",
+      "runId": "6d51913f-c178-4318-b273-da73325c1e93",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 2477,
+        "outputTokens": 281,
+        "estimatedTokens": false,
+        "maxPromptBytes": 5960,
+        "compactedExchanges": 0,
+        "durationMs": 5931
+      },
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "businessEvidenceVerified": true,
+      "durationMs": 6093
+    },
+    {
+      "id": "RP-025",
+      "kind": "NO_EVIDENCE",
+      "split": "tune",
+      "group": "absent-1",
+      "status": "PASS",
+      "runId": "7c00d8bb-7f30-48fb-9601-fd90f763750a",
+      "usage": {
+        "modelCalls": 1,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 1270,
+        "outputTokens": 50,
+        "estimatedTokens": false,
+        "maxPromptBytes": 5905,
+        "compactedExchanges": 0,
+        "durationMs": 7597
+      },
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "NO_EVIDENCE",
+      "durationMs": 8084
+    },
+    {
+      "id": "RP-028",
+      "kind": "NO_EVIDENCE",
+      "split": "holdout",
+      "group": "absent-2",
+      "status": "PASS",
+      "runId": "3b53bc6b-3199-4841-b456-2dba71bf41a5",
+      "usage": {
+        "modelCalls": 1,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 1270,
+        "outputTokens": 48,
+        "estimatedTokens": false,
+        "maxPromptBytes": 5906,
+        "compactedExchanges": 0,
+        "durationMs": 1791
+      },
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "NO_EVIDENCE",
+      "durationMs": 2041
+    },
+    {
+      "id": "RP-033",
+      "kind": "OUT_OF_SCOPE",
+      "split": "tune",
+      "group": "scope-1",
+      "status": "PASS",
+      "runId": "92e379b4-b0fd-4c1a-899b-e0b694e7266a",
+      "usage": {
+        "modelCalls": 0,
+        "requestedToolCalls": 0,
+        "executedToolCalls": 0,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "estimatedTokens": false,
+        "maxPromptBytes": 0,
+        "compactedExchanges": 0,
+        "durationMs": 0
+      },
+      "model": "not-called",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "OUT_OF_SCOPE",
+      "durationMs": 25
+    },
+    {
+      "id": "RP-045",
+      "kind": "FORBIDDEN",
+      "split": "holdout",
+      "group": "forbidden-2",
+      "status": "PASS",
+      "runId": "d79f4821-900d-4396-85c4-f0ff58f492b7",
+      "usage": {
+        "modelCalls": 0,
+        "requestedToolCalls": 0,
+        "executedToolCalls": 0,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "estimatedTokens": false,
+        "maxPromptBytes": 0,
+        "compactedExchanges": 0,
+        "durationMs": 0
+      },
+      "model": "not-called",
+      "promptVersion": "repo-agent-v2",
+      "reasonCode": "FORBIDDEN",
+      "durationMs": 27
+    }
+  ]
+}
