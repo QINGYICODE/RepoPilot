@@ -1469,6 +1469,20 @@ fieldset {
   color: #526057;
 }
 .mobile-example-button { display: none; }
+.checkbox-label { display: flex; align-items: flex-start; gap: 9px; margin: 16px 0; font-size: 14px; cursor: pointer; }
+.checkbox-label input { width: 16px; min-height: 16px; height: 16px; margin: 4px 0 0; flex: 0 0 16px; accent-color: var(--accent); }
+.connection-status { margin: 24px 0; padding: 22px; border: 1px solid var(--control); background: var(--raised); overflow-wrap: anywhere; }
+.connection-heading { display: flex; align-items: flex-start; gap: 12px; }
+.connection-heading > svg { flex-shrink: 0; margin-top: 4px; color: var(--accent); }
+.connection-heading h3 { margin: 0; font-size: 16px; font-weight: 500; }
+.connection-heading p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.connection-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.connection-actions:empty { display: none; }
+.connection-status.has-error { border-color: #b37b72; }
+.connection-status.has-error .connection-heading > svg { color: #a6372a; }
+.connection-error, .danger-button { color: #a6372a; }
+.connection-error { margin: 14px 0 0; }
+.danger-button { text-align: left; min-height: 44px; }
 @media (max-width: 760px) {
   .mobile-example-button { display: inline-flex; min-height: 40px; margin: -10px 0 14px; }
   .analysis-guide > h2, .analysis-guide > p, .analysis-guide > .example-button { display: none; }

@@ -66,13 +66,16 @@ public class SyncService {
     private void run(RepositoryData.SyncJob job) {
         try {
             var record = repositories.repository(job.repoId());
-            var metadata = github.metadata(record.getOwner(),record.getName());
-            if (record.getGithubId() == null || record.getGithubId() != metadata.githubId()) throw DomainException.conflict("GITHUB_IDENTITY_CHANGED");
             var snapshot = repositories.prepare(record.getId(),job.targetSha());
             if (snapshot.status().equals("READY")) { repositories.finishExisting(job.id(),snapshot.id()); return; }
+            var metadata = github.metadata(record.getOwner(),record.getName());
+            if (record.getGithubId() == null || record.getGithubId() != metadata.githubId()) throw DomainException.conflict("GITHUB_IDENTITY_CHANGED");
+            record=repositories.register(record.getOwner(),record.getName(),metadata);
+            var selectedRecord=record;
             mirrors.withSnapshot(record,job.targetSha(),repository -> {
                 repositories.indexing(job.id(),snapshot.id());
-                var product = indexer.build(record,job.targetSha(),repository);
+                var product = indexer.build(selectedRecord,job.targetSha(),repository);
+                repositories.repository(selectedRecord.getId());
                 indices.publish(snapshot,job.id(),product); return null;
             });
         } catch (DomainException failure) { repositories.fail(job.id(),failure.code()); }

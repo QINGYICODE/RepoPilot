@@ -46,6 +46,9 @@ class RepositoryPipelineIT {
     @Autowired io.github.qingyicode.repopilot.incident.IncidentService incidents;
     @Autowired io.github.qingyicode.repopilot.agent.AnalysisService analyses;
     @Autowired JdbcTemplate jdbc;
+    @Autowired ConnectionService connections;
+    @Autowired RepositoryGrantStore grants;
+    @Autowired ConnectionStore connectionStore;
     @org.springframework.boot.test.web.server.LocalServerPort int port;
     long repoId;
     long baseId;
@@ -83,7 +86,10 @@ class RepositoryPipelineIT {
             });
             return model;
         }
-        @Bean @Primary GitHubGateway fixtures() { return (owner,name)->new RepositoryData.Metadata(name.equals("repo")?700:701,owner+"/"+name,"main",false); }
+        @Bean @Primary GitHubGateway fixtures() { return new GitHubGateway() {
+            public RepositoryData.Metadata metadata(String owner,String name) {return new RepositoryData.Metadata(name.equals("repo")?700:701,owner+"/"+name,"main",name.equals("private"));}
+            public String defaultHead(String owner,String name,String branch) {return head;}
+        }; }
         @Bean @Primary GitMirror fixtureMirror(RepositorySettings settings) {
             return new GitMirror(settings) {
                 @Override public <T> T withSnapshot(RepositoryRecord record,String sha,Function<Repository,T> action) {
@@ -237,7 +243,78 @@ class RepositoryPipelineIT {
             assertThat(compared.statusCode()).isEqualTo(200);assertThat(compared.body()).contains("api","external:core","HEAD","BASE");
         }
     }
-    @AfterAll void cleanup() { jdbc.update("DELETE FROM repository WHERE owner='fixture' AND name IN ('repo','other')"); }
+    @Test void explicitManagementConnectionGrantsOnlyTheVerifiedPublicRepositoryAndImportsDefaultHead() throws Exception {
+        assertThatThrownBy(()->connections.connect("fixture/connected",false,true)).hasMessage("REPOSITORY_NOT_ALLOWED");
+        var job=connections.connect("https://github.com/fixture/connected?tab=readme-ov-file",true,true);
+        long deadline=System.nanoTime()+java.time.Duration.ofSeconds(20).toNanos();
+        while(!List.of("READY","FAILED").contains(job.status())&&System.nanoTime()<deadline) {Thread.sleep(20);job=connections.get(job.id());}
+        assertThat(job.status()).withFailMessage("Connection failed: %s",job).isEqualTo("READY");
+        assertThat(job.syncJobId()).isNotBlank();
+        var imported=terminal(job.syncJobId());assertThat(imported.status()).isEqualTo("READY");
+        assertThat(repos.snapshot(job.repoId(),imported.snapshotId()).commitSha()).isEqualTo(head);
+        assertThat(repos.repository(job.repoId()).getName()).isEqualTo("connected");
+        long connected=job.repoId();
+        assertThatThrownBy(()->indices.evidence(connected,headId,"a".repeat(64))).hasMessage("SNAPSHOT_NOT_READY");
+        connections.revoke(connected);
+        assertThatThrownBy(()->repos.repository(connected)).hasMessage("REPOSITORY_NOT_ALLOWED");
+        assertThatThrownBy(()->indices.graph(connected,imported.snapshotId())).hasMessage("REPOSITORY_NOT_ALLOWED");
+        assertThatThrownBy(()->connections.revoke(repoId)).hasMessage("REPOSITORY_AUTHORIZATION_MANAGED_BY_CONFIG");
+    }
+    @Test void failedPrivateVerificationNeverCreatesAGrant() throws Exception {
+        var job=connections.connect("fixture/private",true,false);long deadline=System.nanoTime()+java.time.Duration.ofSeconds(10).toNanos();
+        while(!List.of("READY","FAILED").contains(job.status())&&System.nanoTime()<deadline) {Thread.sleep(20);job=connections.get(job.id());}
+        assertThat(job.status()).isEqualTo("FAILED");assertThat(job.errorCode()).isEqualTo("GITHUB_PRIVATE_REPOSITORY_UNSUPPORTED");
+        assertThat(grants.allowed("fixture/private")).isFalse();assertThat(repos.find("fixture","private")).isNull();
+    }
+    @Test void repositoryIdentityCannotBeReboundAndDefaultBranchCanBeRefreshed() {
+        var first=repos.register("fixture","identity",new RepositoryData.Metadata(880,"fixture/identity","main",false));
+        var changed=repos.register("fixture","identity",new RepositoryData.Metadata(880,"fixture/identity","trunk",false));
+        assertThat(changed.getId()).isEqualTo(first.getId());assertThat(changed.getDefaultRef()).isEqualTo("trunk");
+        assertThatThrownBy(()->repos.authorizeAndRegister("fixture","identity",new RepositoryData.Metadata(881,"fixture/identity","stolen",false)))
+                .hasMessage("GITHUB_IDENTITY_CHANGED");
+        assertThat(repos.find("fixture","identity").getGithubId()).isEqualTo(880);
+        assertThat(repos.find("fixture","identity").getDefaultRef()).isEqualTo("trunk");
+        assertThat(grants.allowed("fixture/identity")).isFalse();
+    }
+    @Test void connectionLeasesDeduplicateAndRecoverWithoutInterruptingAnotherInstance() throws Exception {
+        var address=RepositoryAddress.parse("fixture/lease");
+        var first=connectionStore.enqueue(address,true,false);
+        assertThat(connectionStore.enqueue(address,true,false).id()).isEqualTo(first.id());
+        assertThat(connectionStore.claim(first.id())).isTrue();
+        var other=new ConnectionStore(jdbc);other.maintain();other.stop();
+        assertThat(connectionStore.get(first.id()).status()).isEqualTo("VERIFYING");
+        jdbc.update("UPDATE repository_connection SET lease_until=TIMESTAMPADD(SECOND,-1,CURRENT_TIMESTAMP(6)) WHERE id=?",first.id());
+        other.maintain();assertThat(connectionStore.get(first.id()).status()).isEqualTo("QUEUED");
+        assertThat(other.claim(first.id())).isTrue();other.fail(first.id(),"GITHUB_RATE_LIMITED",120);
+        var failed=other.get(first.id());assertThat(failed.retryAt()).isNotNull();assertThat(failed.attempts()).isEqualTo(2);
+        assertThatThrownBy(()->connections.retry(first.id())).isInstanceOfSatisfying(io.github.qingyicode.repopilot.common.DomainException.class,
+                e->{assertThat(e.code()).isEqualTo("GITHUB_RATE_LIMITED");assertThat(e.retryAfterSeconds()).isBetween(118,121);});
+        try(var client=java.net.http.HttpClient.newHttpClient()) {
+            var response=client.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create("http://127.0.0.1:"+port+"/api/repository-connections/"+first.id()+"/retry"))
+                    .POST(java.net.http.HttpRequest.BodyPublishers.noBody()).build(),java.net.http.HttpResponse.BodyHandlers.ofString());
+            assertThat(response.statusCode()).isEqualTo(503);assertThat(response.body()).contains("GITHUB_RATE_LIMITED","retryAfterSeconds");
+            assertThat(Integer.parseInt(response.headers().firstValue("Retry-After").orElseThrow())).isBetween(118,121);
+        }
+    }
+    @Test void aCompletedConnectionCanRetryAFailedImportAndReuseItsReadySnapshot() throws Exception {
+        var first=connected(connections.connect("fixture/retry",true,true));
+        var indexed=terminal(first.syncJobId());assertThat(indexed.status()).isEqualTo("READY");
+        jdbc.update("UPDATE sync_job SET status='FAILED',error_code='GIT_FETCH_FAILED' WHERE id=?",indexed.id());
+        var retried=connected(connections.retry(first.id()));
+        assertThat(retried.id()).isNotEqualTo(first.id());
+        var reused=terminal(retried.syncJobId());assertThat(reused.status()).isEqualTo("READY");
+        assertThat(reused.snapshotId()).isEqualTo(indexed.snapshotId());
+    }
+    private ConnectionJob connected(ConnectionJob job) throws Exception {
+        long deadline=System.nanoTime()+java.time.Duration.ofSeconds(20).toNanos();
+        while(!List.of("READY","FAILED").contains(job.status())&&System.nanoTime()<deadline) {Thread.sleep(20);job=connections.get(job.id());}
+        assertThat(job.status()).withFailMessage("Connection failed: %s",job).isEqualTo("READY");return job;
+    }
+    @AfterAll void cleanup() {
+        jdbc.update("DELETE FROM repository_connection WHERE owner='fixture'");
+        jdbc.update("DELETE FROM repository_authorization WHERE full_name LIKE 'fixture/%'");
+        jdbc.update("DELETE FROM repository WHERE owner='fixture'");
+    }
     private RepositoryData.SyncJob ready(String sha) throws Exception {
         var job=terminal(sync.enqueue(repoId,sha).id()); assertThat(job.status()).withFailMessage("Sync failed: %s",job.errorCode()).isEqualTo("READY");return job;
     }

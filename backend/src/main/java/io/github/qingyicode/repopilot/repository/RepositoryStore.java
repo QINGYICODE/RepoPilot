@@ -23,12 +23,14 @@ public class RepositoryStore {
     private final RepositoryMapper mapper;
     private final JdbcTemplate jdbc;
     private final RepositoryPolicy policy;
+    private final RepositoryGrantStore grants;
     private final String profileHash;
     private final JsonMapper json = JsonMapper.builder().build();
     public RepositoryStore(RepositoryMapper mapper, JdbcTemplate jdbc, RepositoryPolicy policy,
-                           io.github.qingyicode.repopilot.config.RepositorySettings settings) {
+                           io.github.qingyicode.repopilot.config.RepositorySettings settings,RepositoryGrantStore grants) {
         this.mapper = mapper; this.jdbc = jdbc; this.policy = policy;
         this.profileHash = settings.profileHash();
+        this.grants=grants;
     }
     public RepositoryRecord repository(long id) {
         var record = mapper.selectById(id);
@@ -37,7 +39,14 @@ public class RepositoryStore {
         return record;
     }
     public RepositoryRecord find(String owner, String name) {
-        return mapper.selectOne(new QueryWrapper<RepositoryRecord>().eq("owner", owner).eq("name", name));
+        // JDBC writes below must be visible immediately, including inside the same transaction.
+        var rows = jdbc.query("SELECT * FROM repository WHERE owner=? AND name=?", (rs, row) -> {
+            var record = new RepositoryRecord();
+            record.setId(rs.getLong("id")); record.setOwner(rs.getString("owner")); record.setName(rs.getString("name"));
+            record.setDefaultRef(rs.getString("default_ref")); record.setGithubId(rs.getObject("github_id", Long.class));
+            record.setActiveSnapshotId(rs.getObject("active_snapshot_id", Long.class)); return record;
+        }, owner, name);
+        return rows.isEmpty() ? null : rows.getFirst();
     }
     public List<RepositoryRecord> repositories() {
         return mapper.selectList(new QueryWrapper<RepositoryRecord>().orderByAsc("id")).stream()
@@ -46,9 +55,19 @@ public class RepositoryStore {
     }
     @Transactional
     public RepositoryRecord register(String owner, String name, Metadata metadata) {
+        var previous=find(owner,name);
+        if(previous!=null && previous.getGithubId()!=null && previous.getGithubId()!=metadata.githubId()) throw DomainException.conflict("GITHUB_IDENTITY_CHANGED");
         jdbc.update("INSERT INTO repository(owner,name,default_ref,github_id) VALUES (?,?,?,?) "
-                + "ON DUPLICATE KEY UPDATE github_id=VALUES(github_id)", owner, name, metadata.defaultBranch(), metadata.githubId());
-        return find(owner, name);
+                + "ON DUPLICATE KEY UPDATE default_ref=IF(github_id IS NULL OR github_id=VALUES(github_id),VALUES(default_ref),default_ref),github_id=IF(github_id IS NULL,VALUES(github_id),github_id)", owner, name, metadata.defaultBranch(), metadata.githubId());
+        var registered=find(owner,name);
+        if(registered.getGithubId()!=metadata.githubId()) throw DomainException.conflict("GITHUB_IDENTITY_CHANGED");
+        return registered;
+    }
+    @Transactional
+    public RepositoryRecord authorizeAndRegister(String owner,String name,Metadata metadata) {
+        String fullName=RepositoryPolicy.fullName(owner,name);
+        // Both statements roll back if identity validation or repository persistence fails.
+        var record=register(owner,name,metadata);grants.grant(fullName,metadata.githubId());return record;
     }
     @Transactional
     public SyncJob enqueue(long repoId, String sha) {

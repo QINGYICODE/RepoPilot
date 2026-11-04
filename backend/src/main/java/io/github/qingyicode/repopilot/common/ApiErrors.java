@@ -10,8 +10,11 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 @RestControllerAdvice
 public class ApiErrors {
     @ExceptionHandler(DomainException.class)
-    ResponseEntity<Map<String, String>> domain(DomainException error) {
-        return ResponseEntity.status(error.status()).body(Map.of("code", error.code()));
+    ResponseEntity<Map<String, Object>> domain(DomainException error) {
+        var response=ResponseEntity.status(error.status());
+        if(error.retryAfterSeconds()!=null) return response.header("Retry-After",error.retryAfterSeconds().toString())
+                .body(Map.of("code",error.code(),"retryAfterSeconds",error.retryAfterSeconds()));
+        return response.body(Map.of("code", error.code()));
     }
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class,
             org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class})

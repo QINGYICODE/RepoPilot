@@ -41,6 +41,7 @@ mybatis-plus:
   global-config:
     banner: false
 repopilot:
+  allow-manual-repository-authorization: ${ALLOW_MANUAL_REPOSITORY_AUTHORIZATION:true}
   storage-directory: ${REPOSITORY_STORAGE_DIR:.local/repositories}
   allowed-repositories: ${REPOSITORY_ALLOWLIST:spring-petclinic/spring-petclinic-microservices}
   github-token: ${GITHUB_TOKEN:}

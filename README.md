@@ -8,7 +8,7 @@ RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变�
 
 - **依赖变更影响**：比较两个固定版本，沿 Maven 声明依赖追踪受影响服务，展示变更与依赖路径。
 - **告警历史修复**：从异常、日志符号或配置键检索真实提交与修改行，返回完整 commit SHA，并核对部署版本是否已经包含该提交。
-- **范围与证据约束**：仓库白名单、固定快照和只读工具由服务端控制；越界、越权、伪造引用和无证据结论会被拒绝。
+- **范围与证据约束**：预设允许列表、用户显式授予的仓库访问权限、固定快照和只读工具由服务端控制；越界、越权、伪造引用和无证据结论会被拒绝。
 - **有界工具循环**：控制模型次数、工具次数、时间与上下文规模，缓存重复调用并保留执行记录。
 
 ## 应用场景
@@ -18,7 +18,7 @@ RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变�
 | 依赖变更评审 | “这个模块的依赖变更会影响哪些服务？” | 版本差异、依赖使用方、构建影响与潜在调用影响 |
 | 告警历史溯源 | “某个告警对应的历史修复 commit 是什么？” | 根据实际 diff 提供相似候选；缺少明确事故关联时不声称确定修复 |
 
-项目选用 [Spring PetClinic Microservices](https://github.com/spring-petclinic/spring-petclinic-microservices) 作为仓库分析对象，其 Maven 多模块结构和服务配置可用于研究依赖关系与运维问题。
+项目提供 [Spring PetClinic Microservices](https://github.com/spring-petclinic/spring-petclinic-microservices) 的真实分析示例，也支持在仓库管理中接入其他公开 GitHub 仓库，例如 [RepoPilot 自身](https://github.com/QINGYICODE/RepoPilot)。Maven 模块可用于依赖影响分析，其他语言文件仍可进行代码与历史检索。
 
 ## 设计原则
 
@@ -38,7 +38,7 @@ RepoPilot 面向微服务研发、代码评审和值班排障，聚焦依赖变�
 | 数据持久化 | MySQL、MyBatis-Plus、Flyway |
 | 测试与观测 | JUnit、Actuator、Micrometer |
 
-工具层使用 GitHub API、JGit、JavaParser 和静态 Maven 解析器组织证据，由应用负责仓库白名单、固定快照和结果核验。依赖分析覆盖声明使用关系，外部 BOM、profile 与运行时调用的限制会随结果返回。
+工具层使用 GitHub API、JGit、JavaParser 和静态 Maven 解析器组织证据，由应用负责仓库授权、固定快照和结果核验。依赖分析覆盖声明使用关系，外部 BOM、profile 与运行时调用的限制会随结果返回。
 
 ## 快速开始
 
@@ -68,7 +68,9 @@ npm run dev
 
 访问 `http://127.0.0.1:5173`，首页为“提问与分析”。前端通过 `/api` 代理访问 `http://127.0.0.1:8080`。
 
-在“仓库管理”页登记允许访问的 GitHub 仓库，输入完整 commit SHA 建立索引；回到首页选择任务、模块及版本并提问。依赖比较需要两个快照；告警分析可以补充完整部署 SHA。允许列表和可选网络代理通过 `.env.example` 配置，接口用法见 [API 文档](docs/API.md)。
+在“仓库管理”输入公开 GitHub 地址（也支持 `owner/repository` 或 `.git` 地址），点击“接入并授权”。默认自动导入默认分支最新提交；页面显示连接、拉取与索引进度，刷新可继续查看，失败时提供原因和重试入口。也可输入完整 commit SHA 导入历史版本，然后回到首页选择模块与版本提问。依赖比较需要两个快照；告警分析可补充部署 SHA。
+
+预设仓库通过 `REPOSITORY_ALLOWLIST` 配置；额外仓库必须由用户主动接入授权，Agent 没有授权或切换仓库的工具。可设置 `ALLOW_MANUAL_REPOSITORY_AUTHORIZATION=false` 关闭新增手动授权；已有授权可在仓库管理撤销。当前支持公开仓库，只读 Token 可通过后端 `GITHUB_TOKEN` 配置。未指定 `REPOSITORY_PROXY` 时优先直连，仅在网络故障时尝试环境中的 HTTP 代理；显式指定代理后只使用该代理。限流会显示可重试时间，接口用法见 [API 文档](docs/API.md)。
 
 暂不配置模型时，可用 `python3 scripts/dev.py backend` 启动仓库同步、检索和依赖工具；Agent 任务会明确提示模型未启用。WSL 挂载目录无法自动刷新时，前端可使用 `CHOKIDAR_USEPOLLING=true npm run dev`。
 
@@ -92,7 +94,7 @@ python3 scripts/dev.py live-llm
 
 导入验证说明中的真实快照后，可执行 `python3 scripts/dev.py agent-check`，验证依赖分析、告警候选与拒答业务链路，详见 [业务验证记录](docs/verification/D5-D8验收.md)。
 
-项目目前面向本机单用户使用，权限边界是服务端仓库允许列表和任务范围。声明依赖影响不等同于运行时故障；候选未按 SHA 合入也不排除等价补丁或后续回滚。
+项目目前面向本机单用户使用，权限边界是服务端仓库授权和任务范围。声明依赖影响不等同于运行时故障；候选未按 SHA 合入也不排除等价补丁或后续回滚。
 
 ## 项目结构
 

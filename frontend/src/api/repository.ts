@@ -1,6 +1,11 @@
 export interface Repository { id: number; owner: string; name: string; defaultRef: string; activeSnapshotId: number | null }
 export interface Snapshot { id: number; commitSha: string; coverage: { level: string; historyComplete: boolean; warnings: string[] }; stats: Record<string, number | string> }
 export interface SyncJob { id: string; repoId: number; targetSha: string; snapshotId: number | null; status: string; errorCode: string | null }
+export interface ConnectionJob { id: string; owner: string; name: string; authorizeAccess: boolean; autoImport: boolean; repoId: number | null; syncJobId: string | null; status: 'QUEUED' | 'VERIFYING' | 'RESOLVING' | 'READY' | 'FAILED'; attempts: number; errorCode: string | null; retryAt: string | null; updatedAt: string }
+export interface RepositoryAccessSettings { manualAuthorizationEnabled: boolean; seededRepositories: string[]; githubTokenConfigured: boolean; networkMode: string }
+export class ApiError extends Error {
+  constructor(public readonly code: string, public readonly retryAfterSeconds?: number, public readonly status?: number) { super(code); this.name = 'ApiError' }
+}
 export interface Evidence { id: string; type: string; sourceSha: string; parentSha: string | null; path: string; symbol: string; startLine: number; endLine: number; excerpt: string; sourceUrl: string; contentHash: string; truncated: boolean; locator: Record<string, unknown> }
 export interface SearchPage { items: Evidence[]; nextCursor: string | null; truncated: boolean; retrievalMethod: string }
 export interface Dependency { coordinate: string; version: string; scope: string; resolution: string }
@@ -12,11 +17,14 @@ export interface ImpactResult {
 }
 
 export async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`/api${path}`, { ...options, signal: options.signal ?? AbortSignal.timeout(20_000), headers: { Accept: 'application/json', ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers } })
+  const timeout = AbortSignal.timeout(20_000)
+  const response = await fetch(`/api${path}`, { ...options, signal: options.signal ? AbortSignal.any([options.signal, timeout]) : timeout, headers: { Accept: 'application/json', ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers } })
   if (!response.ok) {
-    const body = await response.json().catch(() => ({})) as { code?: string }
-    throw new Error(body.code ?? `HTTP ${response.status}`)
+    const body = await response.json().catch(() => ({})) as { code?: string; retryAfterSeconds?: number }
+    const retry = body.retryAfterSeconds ?? Number(response.headers.get('Retry-After'))
+    throw new ApiError(body.code ?? `HTTP ${response.status}`, Number.isFinite(retry) && retry > 0 ? retry : undefined, response.status)
   }
+  if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
 

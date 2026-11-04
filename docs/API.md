@@ -2,7 +2,29 @@
 
 服务默认地址为 `http://127.0.0.1:8080/api`，前端开发环境通过 `/api` 代理访问。管理接口仅用于本机工作台；当前没有面向公网的用户登录与多租户授权。
 
-所有仓库操作都经过服务端允许列表校验。请求只接受 owner/name，不能传任意下载 URL、磁盘目录或 Git 远程地址。同步只接受允许分支可达的完整 40 位 commit SHA。
+所有仓库读取与分析都经过服务端授权校验（预设允许列表或管理页面显式授权）。接入管理接口可解析公开 GitHub 地址，下载目标始终由服务端固定生成；不接受其他主机、磁盘目录或任意 Git 远程地址。同步只接受允许分支可达的完整 40 位 commit SHA。
+
+## 接入公开仓库
+
+`POST /repository-connections` 返回 HTTP 202，立即建立可恢复的连接任务：
+
+```json
+{
+  "address": "https://github.com/QINGYICODE/RepoPilot",
+  "authorizeAccess": true,
+  "autoImport": true
+}
+```
+
+`address` 支持 `owner/name`、GitHub HTTPS 页面地址（含子路径、查询参数）、HTTPS `.git` 地址和 `git@github.com:owner/name.git`。归一化后仅向固定的 GitHub 主机请求。`authorizeAccess=true` 是本机管理操作，核验公开属性、仓库名称及稳定 githubId 后才写入授权；`false` 仅接入已授权范围。`ALLOW_MANUAL_REPOSITORY_AUTHORIZATION=false` 关闭额外授权。此接口不注册为模型工具。
+
+`GET /repository-connections/{id}` 返回 `id / owner / name / status / attempts / repoId / syncJobId / errorCode / retryAt` 等字段。连接状态为 `QUEUED → VERIFYING → RESOLVING → READY` 或 `FAILED`，同一仓库与选项的进行中任务去重。进程租约过期可恢复，停止只中断本实例任务。`READY` 表示连接完成；自动导入时需另查 `syncJobId`，直至索引也为 READY。解析默认提交失败时可能已有 `repoId`，不会误报为全部接入失败。
+
+`POST /repository-connections/{id}/retry` 重试失败连接，或重试连接已完成但索引失败的任务。重试保留原连接记录；限流等待期内返回 `GITHUB_RATE_LIMITED`，包含 `Retry-After` 响应头和 `retryAfterSeconds` 字段。GitHub API 每次操作总预算 18 秒，单次请求最多 6 秒，网络/5xx 最多三次；401、404、私有仓库和限流不盲目重试。未显式指定代理时仅传输故障允许转向环境代理，不因限流/权限错误更换出口。
+
+`GET /repository-connections/settings` 返回手动授权开关、预设范围、Token 是否配置及网络模式，不返回密钥或代理地址。
+
+`DELETE /repositories/{id}/authorization` 撤销动态授权，返回 204；保留本机镜像和索引，后续读取、检索、分析均重新校验权限。预设仓库返回 `REPOSITORY_AUTHORIZATION_MANAGED_BY_CONFIG`，需调整服务端配置。
 
 ## 登记与同步
 
