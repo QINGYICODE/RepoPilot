@@ -264,7 +264,7 @@ public class AgentOrchestrator implements AutoCloseable {
             return new Result(id,status,reason,summary,bound.repository(),bound.knowledgeSha(),bound.baseSha(),citations,
                     show?tools.dependency:null,show?tools.incident:null,List.copyOf(events),
                     new Usage(modelCalls,requested,executed,failed,rejected,cached,inputTokens,outputTokens,estimated,maxPromptBytes,compacted,
-                            TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)),model,PROMPT_VERSION,List.copyOf(warnings));
+                            TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)),model,PROMPT_VERSION,List.copyOf(warnings),Scope.from(bound.request()));
         }
     }
 }

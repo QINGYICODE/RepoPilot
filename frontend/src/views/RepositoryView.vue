@@ -2,6 +2,7 @@
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
 import ConnectionStatus from '../components/ConnectionStatus.vue'
+import { preferredSnapshots } from '../lib/snapshots'
 import { EXAMPLES, friendlyError, loadCommitLabels, shortSha, type CommitLabel } from '../lib/presentation'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { request, post, type Repository, type Snapshot, type SyncJob, type ConnectionJob, type RepositoryAccessSettings, type Evidence, type SearchPage, type ImpactResult } from '../api/repository'
@@ -34,6 +35,7 @@ const result = ref<ImpactResult | null>(null)
 const modulePath = ref('')
 let timer: ReturnType<typeof setTimeout> | undefined
 let disposed = false
+let snapshotGeneration = 0
 
 async function run(action: () => Promise<void>) {
   if (busy.value) return
@@ -42,16 +44,19 @@ async function run(action: () => Promise<void>) {
   finally { busy.value = false }
 }
 async function loadSnapshots() {
+  const generation = ++snapshotGeneration, ownerId = selectedRepo.value
   page.value = null; evidence.value = null; result.value = null
-  if (!selectedRepo.value) { snapshots.value = []; return }
-  const repo = repositories.value.find(r => r.id === selectedRepo.value)
-  snapshots.value = await request<Snapshot[]>(`/repositories/${selectedRepo.value}/snapshots`)
+  snapshots.value = []; snapshotId.value = undefined; baseId.value = undefined; headId.value = undefined
+  if (!ownerId) return
+  const repo = repositories.value.find(r => r.id === ownerId)
+  const list = await request<Snapshot[]>(`/repositories/${ownerId}/snapshots`, { signal: lifetime.signal })
+  if (disposed || generation !== snapshotGeneration || ownerId !== selectedRepo.value) return
+  snapshots.value = preferredSnapshots(list, repo?.activeSnapshotId)
   commitSha.value = snapshots.value[0]?.commitSha ?? ''
   snapshotId.value = snapshots.value.find(s => s.id === repo?.activeSnapshotId)?.id ?? snapshots.value[0]?.id
-  const ownerId = selectedRepo.value
   void loadCommitLabels(ownerId, snapshots.value).then(data => { if (selectedRepo.value === ownerId) labels.value = data })
   headId.value = snapshotId.value
-  baseId.value = snapshots.value.find(s => s.id !== headId.value)?.id ?? snapshotId.value
+  baseId.value = snapshots.value.find(s => s.id !== headId.value)?.id
 }
 async function loadRepositories() {
   repositories.value = await request<Repository[]>('/repositories')

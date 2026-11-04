@@ -34,15 +34,11 @@ public class AnalysisScope {
     }
     public static String refusal(AnalysisData.Bound bound) {
         String text=bound.request().question().toLowerCase(Locale.ROOT);
-        if(Pattern.compile("执行.{0,12}(shell|命令|脚本)|删除.{0,12}(数据库|文件|仓库)|读取.{0,12}(密钥|密码|私钥|环境变量)|泄露|绕过.{0,8}(权限|白名单)|部署到生产|execute\\s+(shell|command)|reveal.{0,20}(secret|password|token)|ignore.{0,30}(instruction|rule)|忽略.{0,12}(规则|指令)|/etc/|\\.\\./|[a-z]:[\\\\/]").matcher(text).find()) return "FORBIDDEN";
-        var url=Pattern.compile("(?:https?://github\\.com/)?([a-z0-9_-]+/[a-z0-9_.-]+)").matcher(text);
+        if(Pattern.compile("执行.{0,12}(shell|命令|脚本)|删除.{0,12}(数据库|文件|仓库)|读取.{0,12}(密钥|密码|私钥|环境变量)|泄露|绕过.{0,8}(权限|白名单)|部署到生产|execute\\s+(shell|command)|reveal.{0,20}(secret|password|token)|ignore.{0,30}(instruction|rule)|忽略.{0,12}(规则|指令)|/etc/|\\.\\./|(?<![a-z0-9])[a-z]:[\\\\/]").matcher(text).find()) return "FORBIDDEN";
+        var url=Pattern.compile("https?://github\\.com/([a-z0-9_-]+/[a-z0-9_.-]+)").matcher(text);
         while(url.find()) {
-            String name=url.group(1);
-            if(!name.equalsIgnoreCase(bound.repository()) && !name.startsWith("src/") && !name.startsWith("main/")
-                    && !name.startsWith("resources/") && !text.contains("/"+name) && !bound.repository().endsWith(name)) {
-                // Explicit GitHub URLs always refer to a repository; ordinary relative paths are tool-validated.
-                if(url.group().startsWith("http")) return "FORBIDDEN";
-            }
+            String name=url.group(1).replaceFirst("\\.git$","");
+            if(!name.equalsIgnoreCase(bound.repository())) return "FORBIDDEN";
         }
         if(Pattern.compile("天气|股票|股价|彩票|写.{0,6}(诗|情书)|weather|stock price|horoscope").matcher(text).find()) return "OUT_OF_SCOPE";
         var explicitRepo=Pattern.compile("(?:仓库|repository|repo)\\s*[:：]?\\s*([a-z0-9_.-]+/[a-z0-9_.-]+)").matcher(text);

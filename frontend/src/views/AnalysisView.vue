@@ -7,6 +7,7 @@ import AppIcon from '../components/AppIcon.vue'
 import AnalysisResultPanel from '../components/AnalysisResultPanel.vue'
 import { EXAMPLES, friendlyError, loadCommitLabels, shortModule, shortSha, type CommitLabel } from '../lib/presentation'
 import { useHistoryStore } from '../stores/history'
+import { preferredSnapshots } from '../lib/snapshots'
 const route = useRoute(), router = useRouter(), history = useHistoryStore()
 const repositories = ref<Repository[]>([]), snapshots = ref<Snapshot[]>([]), modules = ref<{ path: string; service: boolean }[]>([]), labels = ref<Record<number, CommitLabel>>({})
 const repoId = ref<number>(), snapshotId = ref<number>(), baseId = ref<number>(), task = ref<Task>('DEPENDENCY_IMPACT')
@@ -35,20 +36,21 @@ async function loadModules() {
   } catch (cause) { if (!controller.signal.aborted && generation === moduleGeneration) error.value = friendlyError(cause) }
   finally { if (generation === moduleGeneration) modulesLoading.value = false }
 }
-async function loadScope() {
+async function loadScope(pinnedIds: number[] = []) {
   const generation = ++scopeGeneration, repository = repoId.value
   ++moduleGeneration; loading.value = true; error.value = ''; notice.value = ''; snapshots.value = []; labels.value = {}; modules.value = []; modulePath.value = ''; snapshotId.value = undefined; baseId.value = undefined; rangeTouched.value = false
   try {
     if (!repository) return
     const list = await request<Snapshot[]>(`/repositories/${repository}/snapshots`, { signal: controller.signal })
     if (generation !== scopeGeneration) return
-    snapshots.value = list; snapshotId.value = list[0]?.id; baseId.value = list.find(s => s.commitSha !== list[0]?.commitSha)?.id
+    const choices = preferredSnapshots(list, repositories.value.find(r => r.id === repository)?.activeSnapshotId, pinnedIds)
+    snapshots.value = choices; snapshotId.value = choices[0]?.id; baseId.value = choices.find(s => s.commitSha !== choices[0]?.commitSha)?.id
     await loadModules()
     void loadCommitLabels(repository, list).then(metadata => {
       if (generation !== scopeGeneration) return
       labels.value = metadata
-      const parent = list.find(s => metadata[list[0]?.id ?? 0]?.parents.includes(s.commitSha))
-      if (parent && !rangeTouched.value && snapshotId.value === list[0]?.id) baseId.value = parent.id
+      const parent = choices.find(s => metadata[choices[0]?.id ?? 0]?.parents.includes(s.commitSha))
+      if (parent && !rangeTouched.value && snapshotId.value === choices[0]?.id) baseId.value = parent.id
     })
   } catch (cause) { if (!controller.signal.aborted && generation === scopeGeneration) error.value = friendlyError(cause) }
   finally { if (generation === scopeGeneration) loading.value = false }
@@ -85,7 +87,19 @@ async function restoreRun(value: unknown) {
   clearTimeout(poll); const generation = ++runGeneration; error.value = ''; result.value = null
   await refreshRun(value, generation)
   const restored = result.value as AnalysisResult | null
-  if (restored) task.value = restored.incident ? 'INCIDENT_FIX' : history.entries.find(e => e.id === value)?.task ?? 'DEPENDENCY_IMPACT'
+  if (restored) {
+    const repo = repositories.value.find(r => r.id === restored.scope?.repoId || `${r.owner}/${r.name}`.toLowerCase() === restored.repository.toLowerCase())
+    if (!repo) { error.value = '该分析的仓库已不在授权范围内。'; return }
+    repoId.value = repo.id
+    await loadScope(restored.scope ? [restored.scope.snapshotId, ...(restored.scope.baseSnapshotId ? [restored.scope.baseSnapshotId] : [])] : [])
+    if (generation !== runGeneration) return
+    task.value = restored.scope?.task ?? (restored.incident ? 'INCIDENT_FIX' : history.entries.find(e => e.id === value)?.task ?? 'DEPENDENCY_IMPACT')
+    snapshotId.value = snapshots.value.find(s => s.id === restored.scope?.snapshotId)?.id ?? snapshots.value.find(s => s.commitSha === restored.knowledgeSha)?.id
+    baseId.value = snapshots.value.find(s => s.id === restored.scope?.baseSnapshotId)?.id ?? snapshots.value.find(s => s.commitSha === restored.baseSha)?.id
+    modulePath.value = restored.scope?.module ?? ''; deployedSha.value = restored.scope?.deployedSha ?? ''
+    question.value = restored.scope?.question ?? ''; rangeTouched.value = true
+    await loadModules()
+  }
 }
 watch(() => route.query.run, value => { void restoreRun(value) })
 async function submit() {
@@ -116,7 +130,7 @@ async function initialize() {
   try {
     repositories.value = await request<Repository[]>('/repositories', { signal: controller.signal })
     repoId.value = repositories.value.find(r => r.id === Number(route.query.repo))?.id ?? repositories.value[0]?.id
-    await loadScope()
+    await loadScope(Number(route.query.snapshot) ? [Number(route.query.snapshot)] : [])
     const requested = snapshots.value.find(s => s.id === Number(route.query.snapshot))
     if (requested) { snapshotId.value = requested.id; rangeTouched.value = true; await loadModules() }
     if (route.query.run) await restoreRun(route.query.run)
@@ -135,7 +149,7 @@ onUnmounted(() => { clearTimeout(poll); ++runGeneration; controller.abort() })
       <form class="composer" @submit.prevent="submit">
         <fieldset :disabled="busy || loading">
           <div class="task-tabs" aria-label="选择分析任务"><label :class="{ selected: task === 'DEPENDENCY_IMPACT' }"><input type="radio" name="analysis-task" :checked="task === 'DEPENDENCY_IMPACT'" aria-label="分析依赖变化" @change="switchTask('DEPENDENCY_IMPACT')" /><AppIcon name="branch" />分析依赖变化</label><label :class="{ selected: task === 'INCIDENT_FIX' }"><input type="radio" name="analysis-task" :checked="task === 'INCIDENT_FIX'" aria-label="查找历史修复" @change="switchTask('INCIDENT_FIX')" /><AppIcon name="search" />查找历史修复</label></div>
-          <label class="field repository-context"><AppIcon name="folder" :size="16" /><span class="sr-only">GitHub 仓库</span><select v-model="repoId" aria-label="GitHub 仓库" @change="loadScope"><option v-for="repo in repositories" :key="repo.id" :value="repo.id">{{ repo.owner }}/{{ repo.name }}</option></select><span class="context-count">{{ snapshots.length }} 个可用版本</span></label>
+          <label class="field repository-context"><AppIcon name="folder" :size="16" /><span class="sr-only">GitHub 仓库</span><select v-model="repoId" aria-label="GitHub 仓库" @change="loadScope()"><option v-for="repo in repositories" :key="repo.id" :value="repo.id">{{ repo.owner }}/{{ repo.name }}</option></select><span class="context-count">{{ snapshots.length }} 个可用版本</span></label>
           <button type="button" class="text-button mobile-example-button" :disabled="loading || busy" @click="useExample"><AppIcon name="plus" :size="15" />填入真实仓库示例</button>
           <label class="question-label" for="analysis-question">{{ task === 'DEPENDENCY_IMPACT' ? '你想了解哪项变更？' : '发生了什么告警？' }}</label>
           <textarea id="analysis-question" ref="questionInput" v-model="question" required maxlength="8000" rows="4" :placeholder="task === 'DEPENDENCY_IMPACT' ? '例如：这个模块的依赖升级，会影响哪些服务？' : '粘贴异常、关键日志或堆栈，例如 zipkin tracing 相关报错…'" @keydown.ctrl.enter.prevent="submit" @keydown.meta.enter.prevent="submit" />

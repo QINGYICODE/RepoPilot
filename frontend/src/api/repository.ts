@@ -1,5 +1,5 @@
 export interface Repository { id: number; owner: string; name: string; defaultRef: string; activeSnapshotId: number | null }
-export interface Snapshot { id: number; commitSha: string; coverage: { level: string; historyComplete: boolean; warnings: string[] }; stats: Record<string, number | string> }
+export interface Snapshot { id: number; commitSha: string; indexVersion: string; coverage: { level: string; historyComplete: boolean; warnings: string[] }; stats: Record<string, number | string> }
 export interface SyncJob { id: string; repoId: number; targetSha: string; snapshotId: number | null; status: string; errorCode: string | null }
 export interface ConnectionJob { id: string; owner: string; name: string; authorizeAccess: boolean; autoImport: boolean; repoId: number | null; syncJobId: string | null; status: 'QUEUED' | 'VERIFYING' | 'RESOLVING' | 'READY' | 'FAILED'; attempts: number; errorCode: string | null; retryAt: string | null; updatedAt: string }
 export interface RepositoryAccessSettings { manualAuthorizationEnabled: boolean; seededRepositories: string[]; githubTokenConfigured: boolean; networkMode: string }

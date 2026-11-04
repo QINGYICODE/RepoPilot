@@ -65,6 +65,8 @@
 
 仅返回 READY 快照。每条记录包含完整 SHA、索引版本、`coverage` 和 `stats`。
 
+接口保留历史索引以便原任务可复查；工作台默认将同一提交合并为一个版本选项并优先较新的索引。明确指定旧 snapshotId 的链接仍使用该不可变快照。重新选择已就绪的提交会切换 activeSnapshot，不重新抓取代码。
+
 `coverage.historyComplete` 仅描述是否遍历完该提交的可达历史，不代表所有文件、diff 或 Maven 模型都完整。`coverage.warnings` 会分别列出文件大小、历史数量、证据数量、diff 截断、未解析依赖与 profile 等限制。
 
 当前 `stats.hunkCount` 统计 DIFF 证据条数，包含 metadataOnly 记录；`durationMs` 为索引构建阶段，不含远程下载和数据库发布。
@@ -170,6 +172,8 @@ Java 按类型/方法和补充窗口切分；POM 按依赖、属性、管理声�
 每次最多 8 次模型请求、12 次工具请求、单工具 4 次请求和 90 秒任务期限；单次模型等待最多 30 秒。重复成功调用复用缓存，连续两次无进展停止；工具错误与无命中分别记录。业务工具已经核验证据后进入 FINALIZE 阶段，关闭后续工具，仅生成动作与引用。任务队列有界，满载返回 429。
 
 `POST /analysis-runs/{id}/cancel` 取消本实例任务，终态不可覆盖；若活跃任务归属另一进程返回 409 / RUN_OWNED_BY_ANOTHER_PROCESS。任务由实例每 15 秒续租，租约 45 秒；进程退出后仅过期任务会标记 PROCESS_RESTARTED，正常停机标记 PROCESS_STOPPED，均不隐式再次调用模型。
+
+新任务的结果包含 `scope`：实际 `repoId / snapshotId / baseSnapshotId / task / module / deployedSha / question`，从服务端已核验的固定范围构造，原问题脱敏后才保存。取消、部分回答和拒答同样保留该范围；刷新或打开历史任务使用它恢复表单，不沿用当前页面的其他仓库。历史记录缺少该字段时返回 null，界面使用原结果的 repository 与 SHA 恢复可确定的范围，不编造丢失的问题。
 
 上下文固定保留任务、规则和版本，只保留最近两组完整工具往返；按 UTF-8 字节加 schema/协议余量保守估算 token 上界，单次输入上界 24,000、累计上界 60,000。过大输入直接停止，不裁掉约束。使用供应商可靠用量时记录实际输入/输出 token；否则明确 estimatedTokens。`model / promptVersion / knowledgeSha / baseSha` 可用于复核一次执行，未保存模型私有推理。
 

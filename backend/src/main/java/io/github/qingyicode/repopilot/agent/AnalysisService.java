@@ -63,7 +63,7 @@ public class AnalysisService {
         var current=store.get(id);
         if(!current.status().equals("RUNNING")) return current;
         var cancelled=new AnalysisData.Result(current.id(),"CANCELLED","CANCELLED","分析已取消，后续结果不会覆盖此状态。",current.repository(),current.knowledgeSha(),
-                current.baseSha(),java.util.List.of(),null,null,current.events(),current.usage(),current.model(),current.promptVersion(),current.warnings());
+                current.baseSha(),java.util.List.of(),null,null,current.events(),current.usage(),current.model(),current.promptVersion(),current.warnings(),current.scope());
         if(store.save(cancelled)) {
             var task=inFlight.get(id);if(task!=null) task.cancel(true);
             record(cancelled);

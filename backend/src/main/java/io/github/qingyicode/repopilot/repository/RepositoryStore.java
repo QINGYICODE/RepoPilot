@@ -77,8 +77,10 @@ public class RepositoryStore {
                 id, repoId, sha, INDEX_VERSION, profileHash);
         jdbc.update("UPDATE sync_job SET status='QUEUED',error_code=NULL,lease_until=NULL WHERE repo_id=? AND target_sha=? "
                 + "AND index_version=? AND profile_hash=? AND status='FAILED'", repoId, sha, INDEX_VERSION, profileHash);
-        return jdbc.queryForObject("SELECT * FROM sync_job WHERE repo_id=? AND target_sha=? AND index_version=? AND profile_hash=?",
+        var job = jdbc.queryForObject("SELECT * FROM sync_job WHERE repo_id=? AND target_sha=? AND index_version=? AND profile_hash=?",
                 this::jobRow, repoId, sha, INDEX_VERSION, profileHash);
+        if (job.status().equals("READY")) activate(repoId,job.snapshotId());
+        return job;
     }
     public SyncJob job(String id) {
         var rows = jdbc.query("SELECT * FROM sync_job WHERE id=?", this::jobRow, id);
@@ -126,8 +128,15 @@ public class RepositoryStore {
     public void fail(String id, String code) {
         jdbc.update("UPDATE sync_job SET status='FAILED',error_code=?,lease_until=NULL WHERE id=? AND status IN ('FETCHING','INDEXING')", code, id);
     }
+    @Transactional
     public void finishExisting(String jobId, long snapshotId) {
+        var job=job(jobId);
         jdbc.update("UPDATE sync_job SET status='READY',snapshot_id=?,error_code=NULL,lease_until=NULL WHERE id=?", snapshotId, jobId);
+        activate(job.repoId(),snapshotId);
+    }
+    private void activate(long repoId, Long snapshotId) {
+        jdbc.update("UPDATE repository SET active_snapshot_id=? WHERE id=? AND EXISTS(SELECT 1 FROM repository_snapshot WHERE id=? AND repo_id=? AND status='READY')",
+                snapshotId,repoId,snapshotId,repoId);
     }
     private SyncJob jobRow(ResultSet rs, int row) throws SQLException {
         return new SyncJob(rs.getString("id"), rs.getLong("repo_id"), rs.getString("target_sha"),

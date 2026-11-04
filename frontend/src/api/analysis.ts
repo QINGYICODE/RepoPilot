@@ -10,6 +10,7 @@ export interface AnalysisResult {
   events: { sequence: number; tool: string; status: string; code: string; cached: boolean; durationMs: number }[]
   usage: { modelCalls: number; requestedToolCalls: number; executedToolCalls: number; failedToolCalls: number; rejectedToolCalls: number; cachedToolCalls: number; inputTokens: number; outputTokens: number; estimatedTokens: boolean; maxPromptBytes: number; compactedExchanges: number; durationMs: number }
   warnings: string[]
+  scope?: { repoId: number; snapshotId: number; baseSnapshotId: number | null; task: Task; module: string | null; deployedSha: string | null; question?: string | null } | null
 }
 export function submitAnalysis(body: AnalysisRequest, signal?: AbortSignal) {
   return request<AnalysisResult>('/analysis-runs', { method: 'POST', body: JSON.stringify(body), signal })

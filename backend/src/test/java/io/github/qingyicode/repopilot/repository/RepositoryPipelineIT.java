@@ -158,6 +158,13 @@ class RepositoryPipelineIT {
         assertThatThrownBy(()->indices.evidence(other,headId,current.id())).hasMessage("SNAPSHOT_NOT_READY");
         assertThatThrownBy(()->indices.file(repoId,headId,"../secret",1,2)).hasMessage("INVALID_REPOSITORY_PATH");
     }
+    @Test void choosingAnAlreadyIndexedCommitUpdatesTheActiveVersionWithoutANewFetch() {
+        var before=jdbc.queryForObject("SELECT attempts FROM sync_job WHERE repo_id=? AND target_sha=? AND index_version=?",Integer.class,repoId,head,RepositorySettings.INDEX_VERSION);
+        sync.enqueue(repoId,base);assertThat(repos.repository(repoId).getActiveSnapshotId()).isEqualTo(baseId);
+        var chosen=sync.enqueue(repoId,head);
+        assertThat(chosen.status()).isEqualTo("READY");assertThat(repos.repository(repoId).getActiveSnapshotId()).isEqualTo(headId);
+        assertThat(chosen.attempts()).isEqualTo(before);
+    }
     @Test void incidentCandidatesUseRealPatchAndJgitDeploymentAncestry() {
         var result=incidents.search(repoId,headId,"lib","ALERT_PIPELINE",base);
         assertThat(result.status()).isEqualTo("PARTIAL");
@@ -183,10 +190,13 @@ class RepositoryPipelineIT {
         assertThat(result.dependency().affectedServices()).containsExactly("api");
         assertThat(result.events()).hasSize(1);
         assertThat(analyses.get(result.id()).citations()).isNotEmpty();
+        assertThat(analyses.get(result.id()).scope()).isEqualTo(new io.github.qingyicode.repopilot.agent.AnalysisData.Scope(repoId,headId,baseId,
+                io.github.qingyicode.repopilot.agent.AnalysisData.Task.DEPENDENCY_IMPACT,null,null,"依赖升级影响哪些服务？"));
         var refused=analyses.submit(new io.github.qingyicode.repopilot.agent.AnalysisData.Request(repoId,headId,
                 io.github.qingyicode.repopilot.agent.AnalysisData.Task.INCIDENT_FIX,"今天天气怎么样？",null,null,null));
         assertThat(refused.status()).isEqualTo("REFUSED");assertThat(refused.usage().modelCalls()).isZero();
         assertThat(analyses.get(refused.id()).reasonCode()).isEqualTo("OUT_OF_SCOPE");
+        assertThat(analyses.get(refused.id()).scope().task()).isEqualTo(io.github.qingyicode.repopilot.agent.AnalysisData.Task.INCIDENT_FIX);
     }
     @Test void cancellationIsPersistedAndCannotBeOverwrittenByWorkerCompletion() throws Exception {
         var submitted=analyses.submit(new io.github.qingyicode.repopilot.agent.AnalysisData.Request(repoId,headId,
@@ -198,6 +208,20 @@ class RepositoryPipelineIT {
         Thread.sleep(100);
         assertThat(analyses.get(submitted.id()).reasonCode()).isEqualTo("CANCELLED");
         assertThat(analyses.get(submitted.id()).dependency()).isNull();
+        assertThat(analyses.get(submitted.id()).scope().repoId()).isEqualTo(repoId);
+    }
+    @Test void legacyRunsWithoutScopeStillDeserialize() {
+        var submitted=analyses.submit(new io.github.qingyicode.repopilot.agent.AnalysisData.Request(repoId,headId,
+                io.github.qingyicode.repopilot.agent.AnalysisData.Task.INCIDENT_FIX,"今天天气怎么样？",null,null,null));
+        jdbc.update("UPDATE analysis_run SET result_json=JSON_REMOVE(result_json,'$.scope') WHERE id=?",submitted.id());
+        var restored=analyses.get(submitted.id());
+        assertThat(restored.scope()).isNull();assertThat(restored.reasonCode()).isEqualTo("OUT_OF_SCOPE");
+    }
+    @Test void persistedTaskQuestionUsesTheRedactedBoundInput() {
+        var submitted=analyses.submit(new io.github.qingyicode.repopilot.agent.AnalysisData.Request(repoId,headId,
+                io.github.qingyicode.repopilot.agent.AnalysisData.Task.INCIDENT_FIX,"今天天气怎么样？ password=example-private-value",null,null,null));
+        assertThat(analyses.get(submitted.id()).scope().question()).doesNotContain("example-private-value").contains("[REDACTED]");
+        assertThat(jdbc.queryForObject("SELECT result_json FROM analysis_run WHERE id=?",String.class,submitted.id())).doesNotContain("example-private-value");
     }
     @Test void failuresAndRetriesNeverReplaceTheActiveSnapshot() throws Exception {
         Long active=repos.repository(repoId).getActiveSnapshotId();
