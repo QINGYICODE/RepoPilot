@@ -59,7 +59,7 @@ class AgentLiveIT {
         var refused=analyses.submit(new AnalysisData.Request(repo.getId(),pin.id(),AnalysisData.Task.INCIDENT_FIX,"今天天气怎么样？",null,null,null));
         assertThat(refused.status()).isEqualTo("REFUSED");assertThat(refused.usage().modelCalls()).isZero();
         Files.writeString(Path.of("target/agent-live-results.json"),json.writerWithDefaultPrettyPrinter().writeValueAsString(Map.of(
-                "promptVersion","repo-agent-v1","knowledgeSha",PIN,"scope","SMOKE_TEST_NOT_FAILURE_RATE_BENCHMARK","runs",List.of(impact,fix,refused))));
+                "promptVersion",impact.promptVersion(),"knowledgeSha",PIN,"scope","SMOKE_TEST_NOT_FAILURE_RATE_BENCHMARK","runs",List.of(impact,fix,refused))));
     }
     private RepositoryRecord requiredRepository() {
         var repo=repositories.find("spring-petclinic","spring-petclinic-microservices");

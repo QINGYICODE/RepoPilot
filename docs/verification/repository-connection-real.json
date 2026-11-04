@@ -131,5 +131,161 @@
       ]
     }
   ],
-  "scope": "SMOKE_TEST_NOT_FAILURE_RATE_BENCHMARK"
+  "scope": "SMOKE_TEST_NOT_FAILURE_RATE_BENCHMARK",
+  "modelAttemptsAfterCitationRepair": [
+    {
+      "status": "PARTIAL",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 3009,
+        "outputTokens": 601,
+        "estimatedTokens": false,
+        "maxPromptBytes": 6064,
+        "compactedExchanges": 0,
+        "durationMs": 17115
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "searchFixCandidates",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 412
+        }
+      ],
+      "historicalFixes": [
+        "98c621d10eb8604614525b0e449fb4cb06565234",
+        "bf9c07ff7639c2f8dc779d48eac8fbfb561613fc"
+      ],
+      "affectedServices": [],
+      "citationCount": 6
+    },
+    {
+      "status": "PARTIAL",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 3291,
+        "outputTokens": 527,
+        "estimatedTokens": false,
+        "maxPromptBytes": 7286,
+        "compactedExchanges": 0,
+        "durationMs": 9507
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "compareDependencyChanges",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 38
+        }
+      ],
+      "historicalFixes": [],
+      "affectedServices": [
+        "backend"
+      ],
+      "citationCount": 5
+    }
+  ],
+  "checks": {
+    "unitPassed": 58,
+    "integrationPassed": 17,
+    "externalSkipped": 4,
+    "frontendBuild": "PASS",
+    "designDetectorFindings": 0
+  },
+  "modelAttemptsAfterSignatureFiltering": [
+    {
+      "status": "PARTIAL",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 2403,
+        "outputTokens": 405,
+        "estimatedTokens": false,
+        "maxPromptBytes": 5919,
+        "compactedExchanges": 0,
+        "durationMs": 9522
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "searchFixCandidates",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 252
+        }
+      ],
+      "signatures": [
+        "IMPECCABLE_HOME"
+      ],
+      "historicalFixes": [
+        "bf9c07ff7639c2f8dc779d48eac8fbfb561613fc"
+      ],
+      "affectedServices": [],
+      "citationCount": 2
+    },
+    {
+      "status": "PARTIAL",
+      "reasonCode": "EVIDENCE_VERIFIED",
+      "model": "qwen3.8-flash",
+      "promptVersion": "repo-agent-v2",
+      "usage": {
+        "modelCalls": 2,
+        "requestedToolCalls": 1,
+        "executedToolCalls": 1,
+        "failedToolCalls": 0,
+        "rejectedToolCalls": 0,
+        "cachedToolCalls": 0,
+        "inputTokens": 3291,
+        "outputTokens": 521,
+        "estimatedTokens": false,
+        "maxPromptBytes": 7286,
+        "compactedExchanges": 0,
+        "durationMs": 10731
+      },
+      "events": [
+        {
+          "sequence": 1,
+          "tool": "compareDependencyChanges",
+          "status": "OK",
+          "code": "TOOL_COMPLETED",
+          "cached": false,
+          "durationMs": 42
+        }
+      ],
+      "signatures": [],
+      "historicalFixes": [],
+      "affectedServices": [
+        "backend"
+      ],
+      "citationCount": 5
+    }
+  ]
 }

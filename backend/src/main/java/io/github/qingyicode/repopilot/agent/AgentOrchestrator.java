@@ -22,6 +22,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 public class AgentOrchestrator implements AutoCloseable {
     static final int MAX_MODEL_CALLS=8, MAX_TOOL_CALLS=12, MAX_INPUT_BYTES=24000, MAX_TOTAL_TOKENS=60000;
+    static final String PROMPT_VERSION="repo-agent-v2";
     private final JsonMapper json=JsonMapper.builder().build();
     private final ExecutorService modelWorkers=new ThreadPoolExecutor(2,2,0,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),
             Thread.ofPlatform().daemon().name("agent-model-",0).factory(),new ThreadPoolExecutor.AbortPolicy());
@@ -39,6 +40,8 @@ public class AgentOrchestrator implements AutoCloseable {
         Finish ONLY with JSON: {"action":"ANSWER","evidenceIds":["actual returned evidence ID"]}.
         Business tools verify their evidence on the server. Once a business result is available, phase FINALIZE disables tools:
         immediately return ANSWER citing just 1-3 returned evidence IDs. Do not copy every ID or attempt extra tool calls.
+        In FINALIZE, choose IDs ONLY from verifiedBusinessEvidenceIds in the server state. Auxiliary search/read results
+        are not verified business conclusions. If citationSelectionRepair is set, correct the selection once using that list.
         If no supported answer is possible, finish ONLY with {"action":"REFUSE","reasonCode":"OUT_OF_SCOPE"}
         or NO_EVIDENCE or INSUFFICIENT_EVIDENCE. No markdown or answer prose. The server renders verified business results.
         """;
@@ -61,7 +64,8 @@ public class AgentOrchestrator implements AutoCloseable {
             ToolCallback[] activeTools=business?new ToolCallback[0]:callbacks;
             var options=defaults.mutate().toolCallbacks(activeTools).maxTokens(business?512:1600).maxRetries(0).temperature(0.0).build();
             var history=context.build(Map.of("modelCalls",state.modelCalls,"requestedTools",state.requested,
-                    "phase",business?"FINALIZE":"RETRIEVE","perToolRequests",state.perTool,"verifiedBusinessEvidenceIds",tools.authoritative.stream().limit(3).toList()),activeTools,MAX_INPUT_BYTES);
+                    "phase",business?"FINALIZE":"RETRIEVE","perToolRequests",state.perTool,"verifiedBusinessEvidenceIds",tools.authoritative.stream().limit(3).toList(),
+                    "citationSelectionRepair",state.citationRepairs>0),activeTools,MAX_INPUT_BYTES);
             state.compacted=context.removed;
             int promptBytes=context.size(history,activeTools);
             state.maxPromptBytes=Math.max(state.maxPromptBytes,promptBytes);
@@ -85,7 +89,11 @@ public class AgentOrchestrator implements AutoCloseable {
             } else {state.inputTokens+=promptBytes;state.outputTokens+=bytes(response.getResult().getOutput().toString())+64;state.estimated=true;}
             if(state.expired()) return state.terminal("TIME_LIMIT");
             if(state.inputTokens+state.outputTokens>MAX_TOTAL_TOKENS) return state.terminal("TOKEN_BUDGET_LIMIT");
-            if(!response.hasToolCalls()) return finish(response.getResult().getOutput().getText(),state);
+            if(!response.hasToolCalls()) {
+                String output=response.getResult().getOutput().getText();
+                if(state.citationRepairs==0 && needsCitationRepair(output,state)) {state.citationRepairs++;continue;}
+                return finish(output,state);
+            }
             var calls=response.getResult().getOutput().getToolCalls();
             state.requested+=calls.size();
             if(state.requested>MAX_TOOL_CALLS) return state.rejectBatch(calls,"TOOL_BUDGET_LIMIT");
@@ -168,6 +176,20 @@ public class AgentOrchestrator implements AutoCloseable {
             if(node.size()!=1 || !node.path("evidenceId").isString() || !node.path("evidenceId").asString().matches("[a-f0-9]{64}")) throw new IllegalArgumentException();
         }
     }
+    private boolean needsCitationRepair(String output,State state) {
+        if(output==null || output.length()>8000 || state.tools.authoritative.isEmpty()) return false;
+        try {
+            var body=json.readTree(output);var ids=body.path("evidenceIds");
+            if(!"ANSWER".equals(body.path("action").asString()) || !ids.isArray() || ids.isEmpty()) return false;
+            boolean auxiliary=false;
+            for(var id:ids) {
+                // Invented or unissued IDs are still refused immediately; repair never relaxes the evidence gate.
+                if(!id.isString() || !state.tools.issued.containsKey(id.asString())) return false;
+                if(!state.tools.authoritative.contains(id.asString())) auxiliary=true;
+            }
+            return auxiliary;
+        } catch(RuntimeException invalid) {return false;}
+    }
     private Result finish(String output,State state) {
         if(output==null || output.length()>8000) return state.terminal("MODEL_OUTPUT_INVALID");
         try {
@@ -197,7 +219,7 @@ public class AgentOrchestrator implements AutoCloseable {
         final long started=System.nanoTime();
         final Map<String,String> cache=new HashMap<>();final Map<String,Integer> perTool=new HashMap<>(),attempts=new HashMap<>();
         final Set<String> callIds=new HashSet<>();final List<Event> events=new ArrayList<>();
-        int modelCalls,requested,executed,failed,rejected,cached,noProgress,maxPromptBytes,compacted;
+        int modelCalls,requested,executed,failed,rejected,cached,noProgress,maxPromptBytes,compacted,citationRepairs;
         long inputTokens,outputTokens;boolean estimated,forbidden;String model="not-called";
         State(String id,Bound bound,AnalysisTools tools,Consumer<Result> progress) {this.id=id;this.bound=bound;this.tools=tools;this.progress=progress;}
         long remainingMillis() {return Math.max(1,90000-TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started));}
@@ -237,11 +259,12 @@ public class AgentOrchestrator implements AutoCloseable {
             var warnings=new ArrayList<String>();
             if(tools.dependency!=null) warnings.addAll(tools.dependency.warnings());
             if(tools.incident!=null) warnings.addAll(tools.incident.warnings());
+            if(citationRepairs>0) warnings.add("CITATION_SELECTION_RETRIED");
             if(show && !reason.equals("EVIDENCE_VERIFIED")) warnings.add("ANALYSIS_STOPPED_"+reason);
             return new Result(id,status,reason,summary,bound.repository(),bound.knowledgeSha(),bound.baseSha(),citations,
                     show?tools.dependency:null,show?tools.incident:null,List.copyOf(events),
                     new Usage(modelCalls,requested,executed,failed,rejected,cached,inputTokens,outputTokens,estimated,maxPromptBytes,compacted,
-                            TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)),model,"repo-agent-v1",List.copyOf(warnings));
+                            TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)),model,PROMPT_VERSION,List.copyOf(warnings));
         }
     }
 }

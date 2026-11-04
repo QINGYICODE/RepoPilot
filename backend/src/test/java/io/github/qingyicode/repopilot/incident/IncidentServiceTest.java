@@ -62,4 +62,10 @@ class IncidentServiceTest {
                 .doesNotContain("supersecret","abcdef","testsecret");
         assertThat(service.search(1,2,null,"纯中文且没有可检索符号",null).reasonCode()).isEqualTo("NO_EVIDENCE");
     }
+    @Test void requestVocabularyCannotSubstituteForAnAlertSignature() {
+        assertThat(IncidentService.signatures("IMPECCABLE_HOME 告警，查找有 diff 依据的历史修复 commit candidates"))
+                .containsExactly("IMPECCABLE_HOME");
+        assertThat(service.search(1,2,null,"请查历史修复 commit 和 diff",null).reasonCode()).isEqualTo("NO_EVIDENCE");
+        verifyNoInteractions(index);
+    }
 }

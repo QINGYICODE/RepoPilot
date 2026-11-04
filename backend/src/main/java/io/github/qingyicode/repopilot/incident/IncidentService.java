@@ -19,7 +19,8 @@ public class IncidentService {
     private final GitMirror mirror;
     private static final Pattern TERMS = Pattern.compile("[A-Za-z_$][A-Za-z0-9_.$/-]{3,119}");
     private static final Pattern FIX = Pattern.compile("(?i)\\b(fix(?:ed|es)?|bug|repair|resolve[ds]?|correct(?:ed)?|prevent|handle[ds]?)\\b|修复|解决");
-    private static final Set<String> NOISE = Set.of("error","warn","info","exception","java.lang","service","http","https","null","true","false","this","that","with","from","failed");
+    private static final Set<String> NOISE = Set.of("error","warn","info","exception","java.lang","service","http","https","null","true","false","this","that","with","from","failed",
+            "commit","commits","diff","github","candidate","candidates","history","historical");
 
     public IncidentService(RepositoryStore repositories, IndexStore indices, GitMirror mirror) {
         this.repositories=repositories; this.indices=indices; this.mirror=mirror;
